@@ -1,0 +1,661 @@
+/*
+  ****************************************************
+  *  Author: Armin Silatani
+  *  Date: 2026-05-18
+  *  Version: 1.0.0
+  ****************************************************
+*/
+
+/* =========================== FONTS ============================ */
+
+@font-face {
+    font-family: "Kalameh";
+    src: url("../../assets/fonts/KalamehWeb-Regular.woff2") format("woff2"),
+         url("../../assets/fonts/KalamehWeb-Regular.woff") format("woff");
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "Kalameh";
+    src: url("../../assets/fonts/KalamehWeb-Black.woff2") format("woff2"),
+         url("../../assets/fonts/KalamehWeb-Black.woff") format("woff");
+    font-weight: 900;
+    font-style: normal;
+    font-display: swap;
+}
+
+/* =========================== RESET & BASE ============================ */
+
+:root {
+    --zorio-accent: #FD7E14;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background: #0d0d0d;
+    font-family: 'Kalameh', system-ui, -apple-system, 'Segoe UI', 'Roboto', sans-serif;
+    padding: 1.8rem 1.8rem 0 1.8rem;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    color: #f5f5f5;
+}
+
+/* ------------------------- SCROLLBAR ------------------------- */
+
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: #1e1e1e;
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #FD7E14;
+    border-radius: 10px;
+}
+
+/* =========================== CARD LAYOUT ============================ */
+
+.premium-card {
+    max-width: 1400px;
+    width: 100%;
+    background: rgba(18, 18, 24, 0.75);
+    backdrop-filter: blur(14px);
+    border-radius: 2rem;
+    border: 1px solid rgba(253, 126, 20, 0.25);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6),
+                0 0 0 1px rgba(253, 126, 20, 0.1) inset;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    margin-bottom: 1rem;
+}
+
+/* ------------------------- TWO-COLUMN GRID ------------------------- */
+
+.two-col-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.8rem;
+    padding: 2rem;
+}
+
+@media (max-width: 780px) {
+    body {
+        padding: 1rem 1rem 0 1rem;
+    }
+
+    .two-col-grid {
+        grid-template-columns: 1fr;
+        gap: 1.8rem;
+        padding: 1.5rem;
+    }
+
+    .glass-header h1 {
+        font-size: 1.5rem;
+        gap: 8px;
+    }
+
+    .logo-h1 {
+        height: 1.8rem;
+    }
+}
+
+/* =========================== HEADER ============================ */
+
+.glass-header {
+    background: rgba(10, 10, 15, 0.7);
+    padding: 1.5rem 2rem;
+    text-align: center;
+    border-bottom: 1px solid rgba(253, 126, 20, 0.3);
+    backdrop-filter: blur(8px);
+}
+
+.glass-header h1 {
+    font-size: 2rem;
+    font-weight: 900;
+    letter-spacing: -0.3px;
+    background: linear-gradient(135deg, #FFFFFF 0%, #FFD6B3 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.logo-h1 {
+    height: 2.2rem;
+    width: auto;
+    display: inline-block;
+    filter: drop-shadow(0 0 2px rgba(253, 126, 20, 0.5));
+}
+
+.badge-premium {
+    background: rgba(253, 126, 20, 0.125);
+    border: 1px solid #FD7E14;
+    border-radius: 100px;
+    padding: 0.25rem 1rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: #FFD1A3;
+    backdrop-filter: blur(4px);
+}
+
+.sub-premium {
+    font-size: 0.85rem;
+    color: #b9b9d0;
+    margin-top: 10px;
+    letter-spacing: 0.3px;
+}
+
+/* =========================== TOOL HEADER ============================ */
+
+.tool-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 1.7rem;
+}
+
+.tool-logo {
+    height: 45px;
+    width: auto;
+}
+
+.tool-title-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    text-align: left;
+    line-height: 0.9;
+}
+
+.title-main {
+    font-size: 2.5rem;
+    font-weight: 900;
+    color: var(--zorio-accent);
+    margin: 0;
+}
+
+.title-sub {
+    font-size: 1.2rem;
+    font-weight: 500;
+    color: #a0a0b0;
+    margin: 0;
+    margin-top: 2px;
+}
+
+.tool-description {
+    text-align: center;
+    margin: 0 auto;
+    max-width: 700px;
+}
+
+/* =========================== SECTIONS ============================ */
+
+.premium-section {
+    background: rgba(12, 12, 18, 0.75);
+    backdrop-filter: blur(4px);
+    border-radius: 1.5rem;
+    padding: 1.5rem;
+    border: 1px solid rgba(253, 126, 20, 0.2);
+    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+}
+
+.premium-section:hover {
+    border-color: rgba(253, 126, 20, 0.5);
+    box-shadow: 0 12px 28px rgba(253, 126, 20, 0.1);
+}
+
+.section-title {
+    font-size: 1.4rem;
+    font-weight: 900;
+    margin-bottom: 1.5rem;
+    border-left: 2px solid #FD7E14;
+    padding-left: 1rem;
+    border-right: none;
+    color: #ffffff;
+    letter-spacing: -0.2px;
+}
+
+/* =========================== UPLOAD ZONE ============================ */
+
+.upload-zone {
+    border: 2px dashed rgba(253, 126, 20, 0.5);
+    border-radius: 1.5rem;
+    background: rgba(0, 0, 0, 0.3);
+    padding: 1.8rem 1rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.25s;
+    margin-bottom: 1.5rem;
+}
+
+.upload-zone:hover {
+    border-color: #FD7E14;
+    background: rgba(253, 126, 20, 0.05);
+    transform: scale(0.99);
+}
+
+.upload-icon-text {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    letter-spacing: 1px;
+    color: #c0c0e0;
+}
+
+.file-input {
+    display: none;
+}
+
+.preview-img {
+    max-width: 100%;
+    max-height: 240px;
+    border-radius: 1rem;
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.5);
+    object-fit: contain;
+    background: #0a0a0f;
+    border: 1px solid #2a2a35;
+}
+
+.info-row {
+    display: flex;
+    justify-content: space-between;
+    background: #0b0b12;
+    padding: 0.6rem 1.2rem;
+    border-radius: 1rem;
+    margin-top: 1rem;
+    font-size: 0.85rem;
+    font-weight: 500;
+    border: 1px solid #20202a;
+    color: #cfcfee;
+}
+
+.badge-size {
+    background: rgba(253, 126, 20, 0.125);
+    padding: 0.2rem 0.7rem;
+    border-radius: 40px;
+    color: #FFB870;
+}
+
+/* =========================== FORM CONTROLS ============================ */
+
+.control-group {
+    margin-bottom: 1.6rem;
+}
+
+label {
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 0.6rem;
+    font-size: 0.9rem;
+    color: #e2e2ff;
+}
+
+select,
+input[type="number"],
+input[type="range"] {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border-radius: 1rem;
+    border: 1px solid #2c2c3a;
+    background: #0a0a0f;
+    color: #f0f0ff;
+    font-family: inherit;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+}
+
+select:focus,
+input:focus {
+    outline: none;
+    border-color: #FD7E14;
+    box-shadow: 0 0 0 2px rgba(253, 126, 20, 0.3);
+}
+
+/* ------------------------- RANGE SLIDER ------------------------- */
+
+input[type="range"] {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 100%;
+    height: 8px;
+    border-radius: 10px;
+    background: linear-gradient(90deg, #FD7E14 85%, #1e1e2a 85%);
+    cursor: pointer;
+}
+
+input[type="range"]::-webkit-slider-runnable-track {
+    height: 8px;
+    border-radius: 10px;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 18px;
+    height: 18px;
+    background: #FD7E14;
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 0 8px rgba(253, 126, 20, 0.8);
+    margin-top: -5px;
+}
+
+input[type="range"]::-moz-range-thumb {
+    width: 18px;
+    height: 18px;
+    background: #FD7E14;
+    border-radius: 50%;
+    border: none;
+}
+
+/* =========================== BUTTONS ============================ */
+
+.btn-primary {
+    background: linear-gradient(105deg, #FD7E14 0%, #E06A20 100%);
+    border: none;
+    color: white;
+    padding: 0.85rem 1.5rem;
+    border-radius: 2rem;
+    font-weight: bold;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.25s;
+    width: 100%;
+    margin-top: 0.5rem;
+    box-shadow: 0 6px 14px rgba(253, 126, 20, 0.3);
+    letter-spacing: 0.3px;
+    font-family: 'Kalameh', sans-serif;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 22px rgba(253, 126, 20, 0.4);
+    background: linear-gradient(105deg, #FFA64C, #F07C30);
+}
+
+.btn-primary:active {
+    transform: translateY(1px);
+}
+
+.btn-download {
+    background: #25253a;
+    border: 1px solid #FD7E14;
+    box-shadow: none;
+    margin-top: 1rem;
+}
+
+.btn-download:hover {
+    background: #2f2f48;
+    border-color: #FFB55C;
+    transform: translateY(-1px);
+}
+
+/* =========================== RESULT AREA ============================ */
+
+.result-area {
+    margin-top: 1.5rem;
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 1.2rem;
+    padding: 1rem;
+    text-align: center;
+    border: 1px solid rgba(253, 126, 20, 0.3);
+}
+
+.output-preview {
+    max-width: 100%;
+    max-height: 170px;
+    border-radius: 0.9rem;
+    margin-top: 0.7rem;
+    object-fit: contain;
+    background: #050508;
+    border: 1px solid #333344;
+}
+
+.size-compare {
+    font-size: 0.85rem;
+    background: #0e0e16;
+    padding: 0.5rem;
+    border-radius: 20px;
+    margin-top: 10px;
+    color: #cdcdff;
+}
+
+.alert-msg {
+    color: #ffb2a5;
+    background: #2a0c1a;
+    padding: 0.7rem;
+    border-radius: 1rem;
+    font-size: 0.8rem;
+    margin-top: 0.8rem;
+    border-right: 3px solid #ff6b5b;
+}
+
+/* =========================== FOOTER ============================ */
+
+/* ------------------------- CARD FOOTER NOTE ------------------------- */
+
+.footer-note {
+    font-size: 0.75rem;
+    text-align: center;
+    padding: 1.2rem;
+    background: #08080e;
+    color: #8c8cb0;
+    border-top: 1px solid #1e1e2c;
+    font-weight: 400;
+}
+
+/* ------------------------- PAGE FOOTER SIGNATURE ------------------------- */
+
+.footer {
+    padding: 30px 0 30px;
+    display: flex;
+    justify-content: center;
+}
+
+.footer-signature {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    opacity: 0.7;
+    transition: opacity 0.3s ease;
+}
+
+.footer-signature:hover {
+    opacity: 1;
+}
+
+.crafted {
+    font-size: 10px;
+    color: #7a7a7a;
+    letter-spacing: 0.08em;
+}
+
+.signature {
+    height: 20px;
+    transform: translateY(-2px);
+    opacity: 0.85;
+    filter: brightness(0.9) contrast(1.05);
+}
+
+/* ------------------------- FOOTER LINK OVERRIDE ------------------------- */
+
+.footer-signature a {
+    display: contents;
+    text-decoration: none;
+    color: inherit;
+}
+
+.footer-signature a:hover {
+    text-decoration: none;
+}
+
+/* =========================== BATCH QUEUE LIST ============================ */
+
+.file-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+    margin-top: 1.2rem;
+}
+
+.file-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: #0c0c18;
+    border-radius: 1rem;
+    padding: 0.7rem 1rem;
+    border: 1px solid #232333;
+    transition: all 0.25s;
+}
+
+.file-item:hover {
+    border-color: #FD7E14;
+    background: #121224;
+}
+
+.file-thumb {
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+    border-radius: 0.5rem;
+    border: 1px solid #2e2e44;
+    background: #07070f;
+}
+
+.file-info {
+    flex: 1;
+    font-size: 0.8rem;
+    color: #c0c0e0;
+}
+
+.file-name {
+    font-weight: 700;
+    margin-bottom: 3px;
+    color: #fff;
+}
+
+.file-meta {
+    font-size: 0.7rem;
+    color: #9494b8;
+}
+
+.remove-btn {
+    background: none;
+    border: 1px solid #4a2840;
+    color: #ff8a8a;
+    font-size: 1.3rem;
+    cursor: pointer;
+    padding: 0 8px;
+    border-radius: 0.5rem;
+    transition: 0.2s;
+}
+
+.remove-btn:hover {
+    background: #2a1a2a;
+    border-color: #ff5e5e;
+    color: #fff;
+}
+
+/* =========================== RESULTS LIST ============================ */
+
+.results-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.result-item {
+    background: #0e0e1a;
+    border-radius: 1rem;
+    padding: 0.8rem;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border: 1px solid #232338;
+}
+
+.result-thumb {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 0.5rem;
+    border: 1px solid #2e2e44;
+    background: #050508;
+}
+
+.result-info {
+    flex: 1;
+    font-size: 0.8rem;
+    color: #c0c0e0;
+}
+
+.result-name {
+    font-weight: 700;
+    margin-bottom: 3px;
+    color: #fff;
+}
+
+.result-stats {
+    font-size: 0.7rem;
+}
+
+.download-single-btn {
+    background: #FD7E14;
+    border: none;
+    color: white;
+    padding: 6px 12px;
+    border-radius: 2rem;
+    cursor: pointer;
+    font-size: 0.75rem;
+    font-family: 'Kalameh', sans-serif;
+    transition: 0.2s;
+}
+
+.download-single-btn:hover {
+    background: #FFA64C;
+}
+
+/* ------------------------- CLEAR QUEUE BUTTON ------------------------- */
+
+#clearQueueBtn {
+    width: 100%;
+    background: #2b2b3a;
+    border: 1px solid #4a4a5e;
+}
+
+#clearQueueBtn:hover {
+    background: #3a3a4e;
+}
+
+/* =========================== UTILITY ============================ */
+
+.glow-text {
+    color: #FD7E14;
+}
+
+hr {
+    border-color: #2a2a38;
+    margin: 0.7rem 0;
+}

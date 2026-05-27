@@ -1,0 +1,283 @@
+<!--
+  ****************************************************
+  *  Author: Armin Silatani
+  *  Date: 2026-05-22
+  *  Version: 0.0.0
+  ****************************************************
+-->
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <!-- :::::::::::::::::::::::::: META TAGS :::::::::::::::::::::::::: -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+    <!-- :::::::::::::::::::::::::: SEO META :::::::::::::::::::::::::: -->
+    <title>Free WebP image converter | Zorio</title>
+    <meta name="description" content="Convert, optimize, and resize images directly in your browser using this WebP converter tool. No data transfer, full privacy, and support for JPEG, PNG, BMP, GIF."> <!-- LENGTH -->
+    <meta name="robots" content="noindex, nofollow">
+
+    <!-- :::::::::::::::::::::::::: FAVICON & STYLES :::::::::::::::::::::::::: -->
+    <link rel="icon" type="image/svg+xml" href="assets/Zo.svg">
+    <link rel="shortcut icon" href="assets/Zo.svg">
+    <!-- MISSING: apple-touch-icon -->
+    <link rel="stylesheet" href="assets/Zorio.css">
+
+    <!-- :::::::::::::::::::::::::: OPEN GRAPH :::::::::::::::::::::::::: -->
+    <meta property="og:title" content="Free WebP image converter | Zorio">
+    <meta property="og:description" content="Convert, optimize, and resize images directly in your browser using this WebP converter tool. No data transfer, full privacy, and support for JPEG, PNG, BMP, GIF.">
+    <meta property="og:url" content="https://zorio.arminsilatani.com/">
+    <meta property="og:type" content="website">
+    <!-- MISSING: og:image -->
+
+    <!-- :::::::::::::::::::::::::: TWITTER CARD :::::::::::::::::::::::::: -->
+    <meta name="twitter:card" content="summary_large_image">
+
+    <!-- :::::::::::::::::::::::::: CANONICAL & HREFLANG :::::::::::::::::::::::::: -->
+    <link rel="canonical" href="https://zorio.arminsilatani.com/">
+    <link rel="alternate" hreflang="en" href="https://zorio.arminsilatani.com/">
+    <link rel="alternate" hreflang="x-default" href="https://zorio.arminsilatani.com/">
+
+    <!-- :::::::::::::::::::::::::: SCHEMA :::::::::::::::::::::::::: -->
+    <script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@graph": [
+                {
+                    "@type": "WebSite",
+                    "@id": "https://zorio.arminsilatani.com/#website",
+                    "url": "https://zorio.arminsilatani.com/",
+                    "name": "Zorio Image Converter",
+                    "description": "Convert, optimize & resize images directly in your browser. Zero upload, total privacy.",
+                    "publisher": {
+                        "@id": "https://arminsilatani.com/#person"
+                    },
+                    "inLanguage": "en"
+                },
+                {
+                    "@type": "Person",
+                    "@id": "https://arminsilatani.com/#person",
+                    "name": "Armin Silatani",
+                    "alternateName": "Armin Silatani",
+                    "jobTitle": "Digital Marketing Specialist",
+                    "description": "Digital Marketing Expert → Armin Silatani",
+                    "image": "https://arminsilatani.com/images/favicon.png",
+                    "email": "contact@arminsilatani.com",
+                    "telephone": "+989125759466",
+                    "sameAs": [
+                        "https://www.linkedin.com/in/arminsilatani/",
+                        "https://github.com/Arminsilatani",
+                        "https://www.instagram.com/arminsilatani",
+                        "https://t.me/ArminSilatani",
+                        "https://wa.me/+989125759466"
+                    ]
+                },
+                {
+                    "@type": "WebPage",
+                    "@id": "https://zorio.arminsilatani.com/#webpage",
+                    "url": "https://zorio.arminsilatani.com/",
+                    "name": "Zorio Image Converter | Free Online Tool by Armin Silatani",
+                    "description": "Convert, optimize & resize images directly in your browser. Zero upload, total privacy.",
+                    "isPartOf": {
+                        "@id": "https://zorio.arminsilatani.com/#website"
+                    },
+                    "about": {
+                        "@id": "https://zorio.arminsilatani.com/#webapp"
+                    },
+                    "mainEntity": {
+                        "@id": "https://zorio.arminsilatani.com/#webapp"
+                    },
+                    "author": {
+                        "@id": "https://arminsilatani.com/#person"
+                    },
+                    "inLanguage": "en"
+                },
+                {
+                    "@type": "WebApplication",
+                    "@id": "https://zorio.arminsilatani.com/#webapp",
+                    "name": "Zorio Image Converter",
+                    "url": "https://zorio.arminsilatani.com/",
+                    "description": "Convert, optimize & resize images directly in your browser. Zero upload, total privacy.",
+                    "applicationCategory": "GraphicsApplication",
+                    "operatingSystem": "All",
+                    "featureList": [
+                        "WebP Conversion",
+                        "Image Resizing",
+                        "Quality Adjustment",
+                        "100% Offline Processing",
+                        "Privacy-First (Zero Upload)"
+                    ],
+                    "offers": {
+                        "@id": "https://zorio.arminsilatani.com/#offer"
+                    },
+                    "inLanguage": "en"
+                },
+                {
+                    "@type": "Offer",
+                    "@id": "https://zorio.arminsilatani.com/#offer",
+                    "price": "0",
+                    "priceCurrency": "USD",
+                    "availability": "https://schema.org/InStock",
+                    "itemOffered": {
+                        "@id": "https://zorio.arminsilatani.com/#webapp"
+                    }
+                }
+            ]
+        }
+    </script>
+
+    <!-- :::::::::::::::::::::::::: SCRIPTS :::::::::::::::::::::::::: -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js" defer></script>
+    <script src="assets/Zorio.js" defer></script>
+</head>
+
+<body>
+    <!-- =========================== MAIN CONTAINER ============================ -->
+    <div class="premium-card">
+
+        <!-- ------------------------- HEADER ------------------------- -->
+        <div class="glass-header">
+            <div class="tool-header">
+                <img src="assets/Zo.svg"
+                     alt="Zorio Logo"
+                     class="tool-logo"
+                     onerror="this.style.display='none'">
+                <div class="tool-title-wrapper">
+                    <h1 class="title-main">Zorio</h1>
+                    <h2 class="title-sub">Image Converter</h2>
+                </div>
+            </div>
+            <p class="tool-description">
+                Convert multiple images at once. Private, offline, fully in your browser.
+            </p>
+        </div>
+
+        <!-- ------------------------- TWO-COLUMN GRID ------------------------- -->
+        <div class="two-col-grid">
+
+            <!-- ---------- LEFT COLUMN – IMAGE QUEUE ---------- -->
+            <div class="premium-section">
+                <div class="section-title">Image Queue</div>
+
+                <!-- Upload Zone (multiple files) -->
+                <div class="upload-zone" id="uploadArea">
+                    <div class="upload-icon-text">[ CLICK OR DROP IMAGES ]</div>
+                    <p style="margin: 8px 0; font-weight: 400;">
+                        Select one or more images (JPEG, PNG, WebP, BMP, GIF)
+                    </p>
+                    <input type="file"
+                           id="fileInput"
+                           multiple
+                           accept="image/jpeg, image/png, image/webp, image/bmp, image/gif"
+                           class="file-input">
+                    <button type="button"
+                            id="selectFileBtn"
+                            style="background:#2c2c3e; border:none; padding:8px 24px; border-radius:60px; margin-top:12px; color:white; cursor:pointer; font-family:'Kalameh', sans-serif;">
+                        Browse Files
+                    </button>
+                </div>
+
+                <!-- Queue List & Controls -->
+                <div id="fileList" class="file-list"></div>
+                <button id="clearQueueBtn"
+                        class="btn-primary"
+                        style="background:#333; margin-top:0.8rem; display:none;">
+                    Clear Queue
+                </button>
+                <div id="noImageMsg" style="color:#8e8eb0; padding:2rem; text-align:center;">
+                    No images added
+                </div>
+            </div>
+
+            <!-- ---------- RIGHT COLUMN – OPTIMIZATION SUITE ---------- -->
+            <div class="premium-section">
+                <div class="section-title">Optimization Suite</div>
+
+                <!-- Output Format -->
+                <div class="control-group">
+                    <label>Output Format</label>
+                    <select id="outputFormat">
+                        <option value="image/jpeg">JPEG (compressed, ideal for photos)</option>
+                        <option value="image/png">PNG (lossless, transparency)</option>
+                        <option value="image/webp" selected>WebP (best quality/size ratio)</option>
+                    </select>
+                </div>
+
+                <!-- Quality Level -->
+                <div class="control-group" id="qualityGroup">
+                    <label>
+                        Quality Level
+                        <span id="qualityVal" class="range-value">85%</span>
+                    </label>
+                    <input type="range"
+                           id="qualitySlider"
+                           min="0.1"
+                           max="1"
+                           step="0.01"
+                           value="0.85">
+                </div>
+
+                <!-- Resize Options -->
+                <div class="control-group">
+                    <label>Resize (optional, applies to all)</label>
+                    <div class="flex-row">
+                        <input type="number"
+                               id="maxWidth"
+                               placeholder="Max width"
+                               step="1"
+                               min="1"
+                               style="width:48%;">
+                        <input type="number"
+                               id="maxHeight"
+                               placeholder="Max height"
+                               step="1"
+                               min="1"
+                               style="width:48%;">
+                    </div>
+                    <small style="color:#a2a2c2;">
+                        Leave empty to keep original dimensions. Aspect ratio preserved.
+                    </small>
+                </div>
+
+                <!-- Convert Button -->
+                <button class="btn-primary" id="convertBtn">Convert All</button>
+
+                <!-- Result Area (hidden initially) -->
+                <div id="resultArea" class="result-area" style="display: none;">
+                    <div style="font-weight: 700; margin-bottom: 12px;">Conversion Results</div>
+                    <div id="resultsList" class="results-list"></div>
+                    <button id="downloadAllBtn"
+                            class="btn-primary btn-download"
+                            style="display:none;">
+                        ⬇ Download All (ZIP)
+                    </button>
+                </div>
+
+                <!-- Error Message -->
+                <div id="errorMsg" class="alert-msg" style="display: none;"></div>
+            </div>
+        </div>
+
+        <!-- ------------------------- FOOTER NOTE ------------------------- -->
+        <div class="footer-note">
+            [ 100% offline processing ] No data transfer. All conversions happen inside your browser.
+            Fast, private, powerful.
+        </div>
+    </div>
+
+    <!-- =========================== SITE FOOTER ============================ -->
+    <footer class="footer">
+        <div class="footer-signature">
+            <a href="https://arminsilatani.com/en/"
+               target="_blank"
+               rel="noopener noreferrer"
+               title="Armin Silatani | Official Website">
+                <span class="crafted">crafted by</span>
+                <img src="assets/ArminSilatani.svg"
+                     alt="Armin Silatani"
+                     class="signature">
+            </a>
+        </div>
+    </footer>
+</body>
+</html>
