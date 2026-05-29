@@ -1,8 +1,8 @@
 /*
   ****************************************************
   *  Author: Armin Silatani
-  *  Date: 2026-05-22
-  *  Version: 0.1.0
+  *  Date: 2026-05-29
+  *  Version: 0.2.0
   ****************************************************
 */
 
@@ -37,19 +37,27 @@ let counter        = 0;
 let avifEncodeModule = null;
 
 /* ------------------------- UTILITIES ------------------------- */
+
+/** Display an error message that auto-hides after 5 seconds */
 function showError(msg) {
     errorMsgDiv.style.display = 'block';
     errorMsgDiv.innerText = msg;
     setTimeout(() => { errorMsgDiv.style.display = 'none'; }, 5000);
 }
 
+/** Revoke all object URLs for uploaded images and clear the array */
 function revokeAllImageURLs() {
-    uploadedImages.forEach(img => { if (img.objectURL) URL.revokeObjectURL(img.objectURL); });
+    uploadedImages.forEach(img => {
+        if (img.objectURL) URL.revokeObjectURL(img.objectURL);
+    });
     uploadedImages = [];
 }
 
+/** Revoke all object URLs for conversion results and clear the array */
 function revokeResultURLs() {
-    results.forEach(r => { if (r.outputURL) URL.revokeObjectURL(r.outputURL); });
+    results.forEach(r => {
+        if (r.outputURL) URL.revokeObjectURL(r.outputURL);
+    });
     results = [];
 }
 
@@ -65,6 +73,7 @@ function toggleQualityControl() {
     avifNotice.style.display = (fmt === 'image/avif') ? 'block' : 'none';
 }
 
+/** Update the quality slider’s visual fill and displayed percentage */
 function updateQualitySlider() {
     const percent = Math.round(qualitySlider.value * 100);
     qualityValSpan.innerText = `${percent}%`;
@@ -72,27 +81,54 @@ function updateQualitySlider() {
         `linear-gradient(90deg, #FD7E14 ${percent}%, #1e1e2a ${percent}%)`;
 }
 
+/**
+ * Calculate new dimensions based on max width/height constraints.
+ * Returns { width, height, resized } – resized is true if a change was made.
+ */
 function calcNewDimensions(imgW, imgH, maxW, maxH) {
-    let targetW = imgW, targetH = imgH, resized = false;
+    let targetW = imgW,
+        targetH = imgH,
+        resized = false;
+
     if (maxW && maxH && maxW > 0 && maxH > 0) {
         const scale = Math.min(maxW / imgW, maxH / imgH);
-        if (scale < 1) { targetW = Math.floor(imgW * scale); targetH = Math.floor(imgH * scale); resized = true; }
+        if (scale < 1) {
+            targetW = Math.floor(imgW * scale);
+            targetH = Math.floor(imgH * scale);
+            resized = true;
+        }
     } else if (maxW && maxW > 0 && maxW < imgW) {
-        targetW = maxW; targetH = Math.floor(imgH * (maxW / imgW)); resized = true;
+        targetW = maxW;
+        targetH = Math.floor(imgH * (maxW / imgW));
+        resized = true;
     } else if (maxH && maxH > 0 && maxH < imgH) {
-        targetH = maxH; targetW = Math.floor(imgW * (maxH / imgH)); resized = true;
+        targetH = maxH;
+        targetW = Math.floor(imgW * (maxH / imgH));
+        resized = true;
     }
-    return { width: Math.max(1, targetW), height: Math.max(1, targetH), resized };
+
+    return {
+        width: Math.max(1, targetW),
+        height: Math.max(1, targetH),
+        resized
+    };
 }
 
-/* Get canvas ImageData for a given size */
+/**
+ * Draw an image onto a canvas and extract ImageData.
+ * Returns { canvas, ctx, imageData }.
+ */
 function getImageData(imgElement, width, height) {
     const canvas = document.createElement('canvas');
-    canvas.width  = width;
+    canvas.width = width;
     canvas.height = height;
     const ctx = canvas.getContext('2d');
     ctx.drawImage(imgElement, 0, 0, width, height);
-    return { canvas, ctx, imageData: ctx.getImageData(0, 0, width, height) };
+    return {
+        canvas,
+        ctx,
+        imageData: ctx.getImageData(0, 0, width, height)
+    };
 }
 
 /* ------------------------- FORMAT ENCODERS ------------------------- */
@@ -103,16 +139,20 @@ function getImageData(imgElement, width, height) {
 function encodeViaCanvas(imgElement, width, height, mime, quality) {
     return new Promise((resolve, reject) => {
         const canvas = document.createElement('canvas');
-        canvas.width  = width;
+        canvas.width = width;
         canvas.height = height;
         const ctx = canvas.getContext('2d');
+
+        // JPEG requires a white background to avoid transparency artefacts
         if (mime === 'image/jpeg') {
             ctx.fillStyle = '#FFFFFF';
             ctx.fillRect(0, 0, width, height);
         }
+
         ctx.drawImage(imgElement, 0, 0, width, height);
+
         canvas.toBlob(
-            b => b ? resolve(b) : reject(new Error('canvas.toBlob returned null')),
+            blob => blob ? resolve(blob) : reject(new Error('canvas.toBlob returned null')),
             mime,
             quality
         );
@@ -127,8 +167,8 @@ function encodeTiff(imgElement, width, height) {
     if (typeof UTIF === 'undefined') {
         return Promise.reject(new Error('UTIF.js not loaded. Make sure assets/libs/UTIF.js exists.'));
     }
+
     const { imageData } = getImageData(imgElement, width, height);
-    // UTIF.encodeImage(rgba, width, height) → ArrayBuffer
     const tiffBuffer = UTIF.encodeImage(imageData.data, width, height);
     return Promise.resolve(new Blob([tiffBuffer], { type: 'image/tiff' }));
 }
@@ -140,7 +180,6 @@ function encodeTiff(imgElement, width, height) {
 async function encodeAvif(imgElement, width, height, quality) {
     if (!avifEncodeModule) {
         try {
-            // Dynamic ESM import from CDN
             avifEncodeModule = await import(
                 'https://cdn.jsdelivr.net/npm/@jsquash/avif@1.3.0/encode.js'
             );
@@ -161,8 +200,9 @@ async function encodeAvif(imgElement, width, height, quality) {
     const avifBuffer = await avifEncodeModule.encode(imageData, {
         quality: avifQuality,
         qualityAlpha: avifQuality,
-        speed: 6   // 0 (slowest/best) – 10 (fastest/worst); 6 is a good default
+        speed: 6  // 0 (slowest/best) – 10 (fastest/worst); 6 is a good default
     });
+
     return new Blob([avifBuffer], { type: 'image/avif' });
 }
 
@@ -185,7 +225,7 @@ function encodeIco(imgElement) {
     // Build raw RGBA pixel data for each size
     const frames = sizes.map(size => {
         const canvas = document.createElement('canvas');
-        canvas.width  = size;
+        canvas.width = size;
         canvas.height = size;
         const ctx = canvas.getContext('2d');
         ctx.drawImage(imgElement, 0, 0, size, size);
@@ -194,26 +234,26 @@ function encodeIco(imgElement) {
 
     // Each BMP frame: BITMAPINFOHEADER (40 bytes) + pixel data (BGRA, bottom-up) + AND mask
     const bmpFrames = frames.map(({ size, data }) => {
-        const pixelCount  = size * size;
-        const rowBytes    = size * 4;                    // 4 bytes per pixel (BGRA)
+        const pixelCount = size * size;
+        const rowBytes = size * 4;                    // 4 bytes per pixel (BGRA)
         const andMaskRowBytes = Math.ceil(size / 8) * 4; // padded to 4-byte boundary
         const andMaskSize = andMaskRowBytes * size;
-        const bmpSize     = 40 + pixelCount * 4 + andMaskSize;
-        const buf         = new ArrayBuffer(bmpSize);
-        const view        = new DataView(buf);
+        const bmpSize = 40 + pixelCount * 4 + andMaskSize;
+        const buf = new ArrayBuffer(bmpSize);
+        const view = new DataView(buf);
 
         // BITMAPINFOHEADER
-        view.setUint32(0,  40,          true);  // biSize
-        view.setInt32 (4,  size,        true);  // biWidth
-        view.setInt32 (8,  size * 2,    true);  // biHeight (×2 for XOR+AND masks)
-        view.setUint16(12, 1,           true);  // biPlanes
-        view.setUint16(14, 32,          true);  // biBitCount
-        view.setUint32(16, 0,           true);  // biCompression (BI_RGB)
+        view.setUint32(0, 40, true);              // biSize
+        view.setInt32(4, size, true);             // biWidth
+        view.setInt32(8, size * 2, true);         // biHeight (×2 for XOR+AND masks)
+        view.setUint16(12, 1, true);              // biPlanes
+        view.setUint16(14, 32, true);             // biBitCount
+        view.setUint32(16, 0, true);              // biCompression (BI_RGB)
         view.setUint32(20, pixelCount * 4, true); // biSizeImage
-        view.setUint32(24, 0, true);             // biXPelsPerMeter
-        view.setUint32(28, 0, true);             // biYPelsPerMeter
-        view.setUint32(32, 0, true);             // biClrUsed
-        view.setUint32(36, 0, true);             // biClrImportant
+        view.setUint32(24, 0, true);              // biXPelsPerMeter
+        view.setUint32(28, 0, true);              // biYPelsPerMeter
+        view.setUint32(32, 0, true);              // biClrUsed
+        view.setUint32(36, 0, true);              // biClrImportant
 
         // Pixel data – BMP is bottom-up, ICO uses BGRA
         let offset = 40;
@@ -234,33 +274,33 @@ function encodeIco(imgElement) {
     });
 
     // ICONDIR header: reserved(2) + type(2) + count(2)
-    const numImages  = bmpFrames.length;
+    const numImages = bmpFrames.length;
     const headerSize = 6 + numImages * 16;
-    let dataOffset   = headerSize;
+    let dataOffset = headerSize;
 
     // Calculate total buffer size
     const totalSize = headerSize + bmpFrames.reduce((sum, f) => sum + f.byteLength, 0);
     const icoBuffer = new ArrayBuffer(totalSize);
-    const icoView   = new DataView(icoBuffer);
-    const icoBytes  = new Uint8Array(icoBuffer);
+    const icoView = new DataView(icoBuffer);
+    const icoBytes = new Uint8Array(icoBuffer);
 
     // ICONDIR
-    icoView.setUint16(0, 0, true); // reserved
-    icoView.setUint16(2, 1, true); // type: 1 = ICO
-    icoView.setUint16(4, numImages, true);
+    icoView.setUint16(0, 0, true);          // reserved
+    icoView.setUint16(2, 1, true);          // type: 1 = ICO
+    icoView.setUint16(4, numImages, true);  // count
 
     // ICONDIRENTRY for each frame
     bmpFrames.forEach((frame, i) => {
         const size = sizes[i];
         const entryOffset = 6 + i * 16;
-        icoView.setUint8 (entryOffset + 0,  size === 256 ? 0 : size); // width  (0 = 256)
-        icoView.setUint8 (entryOffset + 1,  size === 256 ? 0 : size); // height (0 = 256)
-        icoView.setUint8 (entryOffset + 2,  0);    // color count (0 = no palette)
-        icoView.setUint8 (entryOffset + 3,  0);    // reserved
-        icoView.setUint16(entryOffset + 4,  1, true); // planes
-        icoView.setUint16(entryOffset + 6,  32, true); // bit count
-        icoView.setUint32(entryOffset + 8,  frame.byteLength, true); // size of image data
-        icoView.setUint32(entryOffset + 12, dataOffset,       true); // offset of image data
+        icoView.setUint8(entryOffset + 0, size === 256 ? 0 : size); // width  (0 = 256)
+        icoView.setUint8(entryOffset + 1, size === 256 ? 0 : size); // height (0 = 256)
+        icoView.setUint8(entryOffset + 2, 0);    // color count (0 = no palette)
+        icoView.setUint8(entryOffset + 3, 0);    // reserved
+        icoView.setUint16(entryOffset + 4, 1, true);  // planes
+        icoView.setUint16(entryOffset + 6, 32, true); // bit count
+        icoView.setUint32(entryOffset + 8, frame.byteLength, true); // size of image data
+        icoView.setUint32(entryOffset + 12, dataOffset, true);       // offset of image data
 
         // Copy BMP data into ICO buffer
         icoBytes.set(frame, dataOffset);
@@ -272,22 +312,35 @@ function encodeIco(imgElement) {
 
 /* ------------------------- IMAGE LOADING ------------------------- */
 
-/** Load a regular image file via object URL → HTMLImageElement */
+/**
+ * Load a regular image file via object URL → HTMLImageElement.
+ */
 function loadImageFromFile(file) {
     return new Promise((resolve, reject) => {
         const objectURL = URL.createObjectURL(file);
         const img = new Image();
-        img.onload  = () => resolve({ imgElement: img, width: img.width, height: img.height, objectURL });
-        img.onerror = () => { URL.revokeObjectURL(objectURL); reject(new Error('Failed to load image.')); };
+        img.onload = () => resolve({
+            imgElement: img,
+            width: img.width,
+            height: img.height,
+            objectURL
+        });
+        img.onerror = () => {
+            URL.revokeObjectURL(objectURL);
+            reject(new Error('Failed to load image.'));
+        };
         img.src = objectURL;
     });
 }
 
-/** Load a TIFF file using UTIF.js → HTMLImageElement via canvas */
+/**
+ * Load a TIFF file using UTIF.js → HTMLImageElement via canvas.
+ */
 async function loadTiff(file) {
     if (typeof UTIF === 'undefined') {
         throw new Error('UTIF.js not loaded. Make sure assets/libs/UTIF.js exists.');
     }
+
     const arrayBuffer = await file.arrayBuffer();
     const ifds = UTIF.decode(arrayBuffer);
     if (!ifds || ifds.length === 0) throw new Error('Could not decode TIFF file.');
@@ -295,12 +348,12 @@ async function loadTiff(file) {
     // Decode first page
     UTIF.decodeImage(arrayBuffer, ifds[0]);
     const rgba = UTIF.toRGBA8(ifds[0]);
-    const width  = ifds[0].width;
+    const width = ifds[0].width;
     const height = ifds[0].height;
 
     // Paint onto canvas → get object URL
     const canvas = document.createElement('canvas');
-    canvas.width  = width;
+    canvas.width = width;
     canvas.height = height;
     const ctx = canvas.getContext('2d');
     const imageData = ctx.createImageData(width, height);
@@ -312,14 +365,19 @@ async function loadTiff(file) {
             if (!blob) return reject(new Error('Failed to create preview from TIFF.'));
             const objectURL = URL.createObjectURL(blob);
             const img = new Image();
-                        img.onload  = () => resolve({ imgElement: img, width, height, objectURL });
-            img.onerror = () => { URL.revokeObjectURL(objectURL); reject(new Error('Failed to load TIFF preview.')); };
+            img.onload = () => resolve({ imgElement: img, width, height, objectURL });
+            img.onerror = () => {
+                URL.revokeObjectURL(objectURL);
+                reject(new Error('Failed to load TIFF preview.'));
+            };
             img.src = objectURL;
         }, 'image/png');
     });
 }
 
-/** Load a HEIC/HEIF file using heic2any → HTMLImageElement */
+/**
+ * Load a HEIC/HEIF file using heic2any → HTMLImageElement.
+ */
 async function loadHeic(file) {
     if (typeof heic2any === 'undefined') {
         throw new Error('heic2any not loaded. Make sure assets/libs/heic2any.min.js exists.');
@@ -329,7 +387,9 @@ async function loadHeic(file) {
     return loadImageFromFile(outputBlob);
 }
 
-/** Unified loader – picks the right strategy based on file type */
+/**
+ * Unified loader – picks the right strategy based on file type.
+ */
 async function loadAnyImage(file) {
     const name = file.name.toLowerCase();
     const type = file.type.toLowerCase();
@@ -346,9 +406,10 @@ async function loadAnyImage(file) {
 
 /* ------------------------- QUEUE MANAGEMENT ------------------------- */
 
+/** Render the file queue in the UI */
 function renderQueue() {
     fileListDiv.innerHTML = '';
-    noImageMsg.style.display  = uploadedImages.length === 0 ? 'block' : 'none';
+    noImageMsg.style.display = uploadedImages.length === 0 ? 'block' : 'none';
     clearQueueBtn.style.display = uploadedImages.length === 0 ? 'none' : 'block';
 
     uploadedImages.forEach(item => {
@@ -367,13 +428,22 @@ function renderQueue() {
     });
 }
 
+/** Add an array of files to the conversion queue */
 async function addFiles(files) {
     for (const file of files) {
         if (!file.type.startsWith('image/') &&
             !file.name.match(/\.(heic|heif|tif|tiff)$/i)) continue;
+
         try {
             const { imgElement, width, height, objectURL } = await loadAnyImage(file);
-            uploadedImages.push({ id: ++counter, file, imgElement, width, height, objectURL });
+            uploadedImages.push({
+                id: ++counter,
+                file,
+                imgElement,
+                width,
+                height,
+                objectURL
+            });
         } catch (err) {
             showError(`Could not load "${file.name}": ${err.message}`);
         }
@@ -381,6 +451,7 @@ async function addFiles(files) {
     renderQueue();
 }
 
+/** Remove a single item from the queue by its ID */
 function removeItem(id) {
     const idx = uploadedImages.findIndex(i => i.id === id);
     if (idx === -1) return;
@@ -391,12 +462,24 @@ function removeItem(id) {
 
 /* ------------------------- CONVERSION ------------------------- */
 
+/** Map MIME type to file extension */
 function outputExtension(mime) {
-    return { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp','image/avif': 'avif', 'image/tiff': 'tiff', 'image/x-icon': 'ico' }[mime] || 'bin';
+    return {
+        'image/jpeg': 'jpg',
+        'image/png': 'png',
+        'image/webp': 'webp',
+        'image/avif': 'avif',
+        'image/tiff': 'tiff',
+        'image/x-icon': 'ico'
+    }[mime] || 'bin';
 }
 
+/** Convert all queued images and display results */
 async function convertAll() {
-    if (uploadedImages.length === 0) { showError('Add at least one image first.'); return; }
+    if (uploadedImages.length === 0) {
+        showError('Add at least one image first.');
+        return;
+    }
 
     revokeResultURLs();
     resultsListDiv.innerHTML = '';
@@ -405,10 +488,10 @@ async function convertAll() {
     convertBtn.disabled = true;
     convertBtn.innerText = 'Converting…';
 
-    const fmt     = outputFormatSelect.value;
+    const fmt = outputFormatSelect.value;
     const quality = parseFloat(qualitySlider.value);
-    const maxW    = parseInt(maxWidthInput.value)  || 0;
-    const maxH    = parseInt(maxHeightInput.value) || 0;
+    const maxW = parseInt(maxWidthInput.value) || 0;
+    const maxH = parseInt(maxHeightInput.value) || 0;
 
     for (const item of uploadedImages) {
         try {
@@ -425,12 +508,18 @@ async function convertAll() {
                 blob = await encodeViaCanvas(item.imgElement, width, height, fmt, quality);
             }
 
-            const ext  = outputExtension(fmt);
+            const ext = outputExtension(fmt);
             const base = item.file.name.replace(/\.[^.]+$/, '');
             const name = `${base}.${ext}`;
             const outputURL = URL.createObjectURL(blob);
 
-            results.push({ id: item.id, blob, outputURL, name, sizeKB: (blob.size / 1024).toFixed(1) });
+            results.push({
+                id: item.id,
+                blob,
+                outputURL,
+                name,
+                sizeKB: (blob.size / 1024).toFixed(1)
+            });
 
             // Render result row
             const row = document.createElement('div');
@@ -444,7 +533,6 @@ async function convertAll() {
                 <a href="${outputURL}" download="${name}" class="btn-download-single" title="Download">⬇</a>
             `;
             resultsListDiv.appendChild(row);
-
         } catch (err) {
             showError(`"${item.file.name}" failed: ${err.message}`);
         }
@@ -458,14 +546,19 @@ async function convertAll() {
 
 /* ------------------------- ZIP DOWNLOAD ------------------------- */
 
+/** Package all conversion results into a ZIP archive and trigger download */
 async function downloadAllAsZip() {
     if (results.length === 0) return;
+
     const zip = new JSZip();
-    for (const r of results) zip.file(r.name, r.blob);
+    for (const r of results) {
+        zip.file(r.name, r.blob);
+    }
+
     const zipBlob = await zip.generateAsync({ type: 'blob' });
     const url = URL.createObjectURL(zipBlob);
-    const a   = document.createElement('a');
-    a.href     = url;
+    const a = document.createElement('a');
+    a.href = url;
     a.download = 'zorio-converted.zip';
     a.click();
     setTimeout(() => URL.revokeObjectURL(url), 10000);
@@ -480,11 +573,19 @@ uploadArea.addEventListener('click', e => {
 });
 
 fileInput.addEventListener('change', () => {
-    if (fileInput.files.length) addFiles(Array.from(fileInput.files));fileInput.value = '';
+    if (fileInput.files.length) {
+        addFiles(Array.from(fileInput.files));
+        fileInput.value = '';   // allow re-uploading the same file
+    }
 });
 
-uploadArea.addEventListener('dragover', e => { e.preventDefault(); uploadArea.classList.add('drag-over'); });
-uploadArea.addEventListener('dragleave', ()  => uploadArea.classList.remove('drag-over'));
+uploadArea.addEventListener('dragover', e => {
+    e.preventDefault();
+    uploadArea.classList.add('drag-over');
+});
+uploadArea.addEventListener('dragleave', () => {
+    uploadArea.classList.remove('drag-over');
+});
 uploadArea.addEventListener('drop', e => {
     e.preventDefault();
     uploadArea.classList.remove('drag-over');
@@ -509,10 +610,10 @@ convertBtn.addEventListener('click', convertAll);
 downloadAllBtn.addEventListener('click', downloadAllAsZip);
 
 outputFormatSelect.addEventListener('change', toggleQualityControl);
-
 qualitySlider.addEventListener('input', updateQualitySlider);
 
-/* ------------------------- INIT ------------------------- */
+/* ------------------------- INITIALIZATION ------------------------- */
+
 toggleQualityControl();
 updateQualitySlider();
 renderQueue();
