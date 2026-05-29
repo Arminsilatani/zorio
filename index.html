@@ -2,7 +2,7 @@
   ****************************************************
   *  Author: Armin Silatani
   *  Date: 2026-05-22
-  *  Version: 0.0.0
+  *  Version: 0.1.0
   ****************************************************
 -->
 <!DOCTYPE html>
@@ -13,22 +13,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
     <!-- :::::::::::::::::::::::::: SEO META :::::::::::::::::::::::::: -->
-    <title>Free WebP image converter | Zorio</title>
-    <meta name="description" content="Convert, optimize, and resize images directly in your browser using this WebP converter tool. No data transfer, full privacy, and support for JPEG, PNG, BMP, GIF."> <!-- LENGTH -->
+    <title>Free image converter – WebP, AVIF, HEIC, TIFF | Zorio</title>
+    <meta name="description" content="Convert images to WebP, AVIF, JPEG, PNG, TIFF and ICO directly in your browser. No upload, full privacy. Supports HEIC, TIFF, BMP, GIF input.">
     <meta name="robots" content="noindex, nofollow">
 
     <!-- :::::::::::::::::::::::::: FAVICON & STYLES :::::::::::::::::::::::::: -->
     <link rel="icon" type="image/svg+xml" href="assets/Zo.svg">
     <link rel="shortcut icon" href="assets/Zo.svg">
-    <!-- MISSING: apple-touch-icon -->
     <link rel="stylesheet" href="assets/Zorio.css">
 
     <!-- :::::::::::::::::::::::::: OPEN GRAPH :::::::::::::::::::::::::: -->
-    <meta property="og:title" content="Free WebP image converter | Zorio">
-    <meta property="og:description" content="Convert, optimize, and resize images directly in your browser using this WebP converter tool. No data transfer, full privacy, and support for JPEG, PNG, BMP, GIF.">
+    <meta property="og:title" content="Free image converter – WebP, AVIF, HEIC, TIFF | Zorio">
+    <meta property="og:description" content="Convert images to WebP, AVIF, JPEG, PNG, TIFF and ICO directly in your browser. No upload, full privacy.">
     <meta property="og:url" content="https://zorio.arminsilatani.com/">
     <meta property="og:type" content="website">
-    <!-- MISSING: og:image -->
 
     <!-- :::::::::::::::::::::::::: TWITTER CARD :::::::::::::::::::::::::: -->
     <meta name="twitter:card" content="summary_large_image">
@@ -49,9 +47,7 @@
                     "url": "https://zorio.arminsilatani.com/",
                     "name": "Zorio Image Converter",
                     "description": "Convert, optimize & resize images directly in your browser. Zero upload, total privacy.",
-                    "publisher": {
-                        "@id": "https://arminsilatani.com/#person"
-                    },
+                    "publisher": { "@id": "https://arminsilatani.com/#person" },
                     "inLanguage": "en"
                 },
                 {
@@ -78,18 +74,10 @@
                     "url": "https://zorio.arminsilatani.com/",
                     "name": "Zorio Image Converter | Free Online Tool by Armin Silatani",
                     "description": "Convert, optimize & resize images directly in your browser. Zero upload, total privacy.",
-                    "isPartOf": {
-                        "@id": "https://zorio.arminsilatani.com/#website"
-                    },
-                    "about": {
-                        "@id": "https://zorio.arminsilatani.com/#webapp"
-                    },
-                    "mainEntity": {
-                        "@id": "https://zorio.arminsilatani.com/#webapp"
-                    },
-                    "author": {
-                        "@id": "https://arminsilatani.com/#person"
-                    },
+                    "isPartOf": { "@id": "https://zorio.arminsilatani.com/#website" },
+                    "about": { "@id": "https://zorio.arminsilatani.com/#webapp" },
+                    "mainEntity": { "@id": "https://zorio.arminsilatani.com/#webapp" },
+                    "author": { "@id": "https://arminsilatani.com/#person" },
                     "inLanguage": "en"
                 },
                 {
@@ -102,14 +90,16 @@
                     "operatingSystem": "All",
                     "featureList": [
                         "WebP Conversion",
+                        "AVIF Conversion",
+                        "HEIC/HEIF Input Support",
+                        "TIFF Input & Output",
+                        "ICO Output (16×16, 32×32, 48×48)",
                         "Image Resizing",
                         "Quality Adjustment",
                         "100% Offline Processing",
                         "Privacy-First (Zero Upload)"
                     ],
-                    "offers": {
-                        "@id": "https://zorio.arminsilatani.com/#offer"
-                    },
+                    "offers": { "@id": "https://zorio.arminsilatani.com/#offer" },
                     "inLanguage": "en"
                 },
                 {
@@ -118,16 +108,32 @@
                     "price": "0",
                     "priceCurrency": "USD",
                     "availability": "https://schema.org/InStock",
-                    "itemOffered": {
-                        "@id": "https://zorio.arminsilatani.com/#webapp"
-                    }
+                    "itemOffered": { "@id": "https://zorio.arminsilatani.com/#webapp" }
                 }
             ]
         }
     </script>
 
     <!-- :::::::::::::::::::::::::: SCRIPTS :::::::::::::::::::::::::: -->
+    <!-- ZIP -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js" defer></script>
+
+    <!-- HEIC/HEIF decoder (local) -->
+    <script src="assets/libs/heic2any.min.js" defer></script>
+
+    <!-- TIFF decoder/encoder (local) -->
+    <script src="assets/libs/UTIF.js" defer></script>
+
+    <!-- AVIF encoder – squoosh/jSquash (CDN, WASM-based) -->
+    <!--
+        We load the ESM module inline after DOMContentLoaded via dynamic import.
+        The <script> tag below is just a preload hint; actual init is in Zorio.js.
+    -->
+    <link rel="modulepreload"
+          href="https://cdn.jsdelivr.net/npm/@jsquash/avif@1.3.0/encode.js"
+          as="script">
+
+    <!-- Main app -->
     <script src="assets/Zorio.js" defer></script>
 </head>
 
@@ -159,20 +165,24 @@
             <div class="premium-section">
                 <div class="section-title">Image Queue</div>
 
-                <!-- Upload Zone (multiple files) -->
+                <!-- Upload Zone -->
                 <div class="upload-zone" id="uploadArea">
                     <div class="upload-icon-text">[ CLICK OR DROP IMAGES ]</div>
                     <p style="margin: 8px 0; font-weight: 400;">
-                        Select one or more images (JPEG, PNG, WebP, BMP, GIF)
+                        JPEG, PNG, WebP, BMP, GIF, HEIC, TIFF, AVIF
                     </p>
                     <input type="file"
                            id="fileInput"
                            multiple
-                           accept="image/jpeg, image/png, image/webp, image/bmp, image/gif"
+                           accept="image/jpeg, image/png, image/webp, image/bmp, image/gif,
+                                   image/heic, image/heif, image/tiff, image/avif,
+                                   .heic, .heif, .tif, .tiff"
                            class="file-input">
                     <button type="button"
                             id="selectFileBtn"
-                            style="background:#2c2c3e; border:none; padding:8px 24px; border-radius:60px; margin-top:12px; color:white; cursor:pointer; font-family:'Kalameh', sans-serif;">
+                            style="background:#2c2c3e; border:none; padding:8px 24px;
+                                   border-radius:60px; margin-top:12px; color:white;
+                                   cursor:pointer; font-family:'Kalameh', sans-serif;">
                         Browse Files
                     </button>
                 </div>
@@ -200,6 +210,9 @@
                         <option value="image/jpeg">JPEG (compressed, ideal for photos)</option>
                         <option value="image/png">PNG (lossless, transparency)</option>
                         <option value="image/webp" selected>WebP (best quality/size ratio)</option>
+                        <option value="image/avif">AVIF (next-gen, smallest size)</option>
+                        <option value="image/tiff">TIFF (lossless, professional)</option>
+                        <option value="image/x-icon">ICO (favicon, 16/32/48 px)</option>
                     </select>
                 </div>
 
@@ -239,10 +252,19 @@
                     </small>
                 </div>
 
+                <!-- AVIF loading notice (hidden by default) -->
+                <div id="avifNotice"
+                     style="display:none; font-size:0.78rem; color:#a2a2c2;
+                            background:rgba(253,126,20,0.08); border:1px solid rgba(253,126,20,0.25);
+                            border-radius:8px; padding:8px 12px; margin-bottom:8px;">
+                    ⚠ AVIF encoding requires a one-time download (~600 KB) from jsDelivr CDN.
+                    Make sure you're online for the first use.
+                </div>
+
                 <!-- Convert Button -->
                 <button class="btn-primary" id="convertBtn">Convert All</button>
 
-                <!-- Result Area (hidden initially) -->
+                <!-- Result Area -->
                 <div id="resultArea" class="result-area" style="display: none;">
                     <div style="font-weight: 700; margin-bottom: 12px;">Conversion Results</div>
                     <div id="resultsList" class="results-list"></div>

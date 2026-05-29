@@ -1,8 +1,8 @@
 /*
   ****************************************************
   *  Author: Armin Silatani
-  *  Date: 2026-05-18
-  *  Version: 1.0.0
+  *  Date: 2026-05-22
+  *  Version: 0.1.0
   ****************************************************
 */
 
@@ -26,38 +26,43 @@ const resultArea         = document.getElementById('resultArea');
 const resultsListDiv     = document.getElementById('resultsList');
 const downloadAllBtn     = document.getElementById('downloadAllBtn');
 const errorMsgDiv        = document.getElementById('errorMsg');
+const avifNotice         = document.getElementById('avifNotice');
 
 /* ------------------------- STATE ------------------------- */
-let uploadedImages = [];   // { id, file, imgElement, width, height, objectURL }
-let results = [];          // { id, blob, outputURL, name, sizeKB, originalName }
+let uploadedImages = [];  // { id, file, imgElement, width, height, objectURL }
+let results        = [];  // { id, blob, outputURL, name, sizeKB, originalName, ... }
+let counter        = 0;
 
-let counter = 0;
+/* AVIF encoder module – loaded lazily on first AVIF conversion */
+let avifEncodeModule = null;
 
 /* ------------------------- UTILITIES ------------------------- */
 function showError(msg) {
     errorMsgDiv.style.display = 'block';
     errorMsgDiv.innerText = msg;
-    setTimeout(() => errorMsgDiv.style.display = 'none', 4000);
+    setTimeout(() => { errorMsgDiv.style.display = 'none'; }, 5000);
 }
 
 function revokeAllImageURLs() {
-    uploadedImages.forEach(img => {
-        if (img.objectURL) URL.revokeObjectURL(img.objectURL);
-    });
+    uploadedImages.forEach(img => { if (img.objectURL) URL.revokeObjectURL(img.objectURL); });
     uploadedImages = [];
 }
 
 function revokeResultURLs() {
-    results.forEach(r => {
-        if (r.outputURL) URL.revokeObjectURL(r.outputURL);
-    });
+    results.forEach(r => { if (r.outputURL) URL.revokeObjectURL(r.outputURL); });
     results = [];
 }
 
+/**
+ * Disable quality slider for formats that don't use it (PNG, TIFF, ICO).
+ * Show AVIF CDN notice when AVIF is selected.
+ */
 function toggleQualityControl() {
-    const isPng = outputFormatSelect.value === 'image/png';
-    qualitySlider.disabled = isPng;
-    qualityGroup.style.opacity = isPng ? '0.6' : '1';
+    const fmt = outputFormatSelect.value;
+    const noQuality = ['image/png', 'image/tiff', 'image/x-icon'].includes(fmt);
+    qualitySlider.disabled = noQuality;
+    qualityGroup.style.opacity = noQuality ? '0.6' : '1';
+    avifNotice.style.display = (fmt === 'image/avif') ? 'block' : 'none';
 }
 
 function updateQualitySlider() {
@@ -80,289 +85,434 @@ function calcNewDimensions(imgW, imgH, maxW, maxH) {
     return { width: Math.max(1, targetW), height: Math.max(1, targetH), resized };
 }
 
+/* Get canvas ImageData for a given size */
+function getImageData(imgElement, width, height) {
+    const canvas = document.createElement('canvas');
+    canvas.width  = width;
+    canvas.height = height;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(imgElement, 0, 0, width, height);
+    return { canvas, ctx, imageData: ctx.getImageData(0, 0, width, height) };
+}
+
+/* ------------------------- FORMAT ENCODERS ------------------------- */
+
+/**
+ * Standard canvas-based encode: JPEG, PNG, WebP.
+ */
+function encodeViaCanvas(imgElement, width, height, mime, quality) {
+    return new Promise((resolve, reject) => {
+        const canvas = document.createElement('canvas');
+        canvas.width  = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (mime === 'image/jpeg') {
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fillRect(0, 0, width, height);
+        }
+        ctx.drawImage(imgElement, 0, 0, width, height);
+        canvas.toBlob(
+            b => b ? resolve(b) : reject(new Error('canvas.toBlob returned null')),
+            mime,
+            quality
+        );
+    });
+}
+
+/**
+ * TIFF encode using UTIF.js.
+ * UTIF.encodeImage expects a Uint8Array of raw RGBA pixels.
+ */
+function encodeTiff(imgElement, width, height) {
+    if (typeof UTIF === 'undefined') {
+        return Promise.reject(new Error('UTIF.js not loaded. Make sure assets/libs/UTIF.js exists.'));
+    }
+    const { imageData } = getImageData(imgElement, width, height);
+    // UTIF.encodeImage(rgba, width, height) → ArrayBuffer
+    const tiffBuffer = UTIF.encodeImage(imageData.data, width, height);
+    return Promise.resolve(new Blob([tiffBuffer], { type: 'image/tiff' }));
+}
+
+/**
+ * AVIF encode using @jsquash/avif (loaded from jsDelivr CDN).
+ * Module is imported once and cached in avifEncodeModule.
+ */
+async function encodeAvif(imgElement, width, height, quality) {
+    if (!avifEncodeModule) {
+        try {
+            // Dynamic ESM import from CDN
+            avifEncodeModule = await import(
+                'https://cdn.jsdelivr.net/npm/@jsquash/avif@1.3.0/encode.js'
+            );
+            // The module needs to initialise its WASM binary.
+            // @jsquash/avif auto-fetches the .wasm from the same CDN path.
+            if (typeof avifEncodeModule.default === 'function') {
+                await avifEncodeModule.default();
+            }
+        } catch (err) {
+            throw new Error(`Failed to load AVIF encoder from CDN: ${err.message}`);
+        }
+    }
+
+    const { imageData } = getImageData(imgElement, width, height);
+
+    // quality is 0–100 for @jsquash/avif
+    const avifQuality = Math.round(quality * 100);
+    const avifBuffer = await avifEncodeModule.encode(imageData, {
+        quality: avifQuality,
+        qualityAlpha: avifQuality,
+        speed: 6   // 0 (slowest/best) – 10 (fastest/worst); 6 is a good default
+    });
+    return new Blob([avifBuffer], { type: 'image/avif' });
+}
+
+/**
+ * ICO encode – pure JS, no library needed.
+ *
+ * Builds a multi-size ICO file containing 16×16, 32×32, and 48×48 bitmaps.
+ * ICO format reference: https://en.wikipedia.org/wiki/ICO_(file_format)
+ *
+ * Structure:
+ *   ICONDIR  (6 bytes)
+ *   ICONDIRENTRY × n  (16 bytes each)
+ *   BMP/PNG data for each size
+ *
+ * We embed each size as a 32-bit ARGB BMP (BITMAPINFOHEADER + XOR mask).
+ */
+function encodeIco(imgElement) {
+    const sizes = [16, 32, 48];
+
+    // Build raw RGBA pixel data for each size
+    const frames = sizes.map(size => {
+        const canvas = document.createElement('canvas');
+        canvas.width  = size;
+        canvas.height = size;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(imgElement, 0, 0, size, size);
+        return { size, data: ctx.getImageData(0, 0, size, size).data };
+    });
+
+    // Each BMP frame: BITMAPINFOHEADER (40 bytes) + pixel data (BGRA, bottom-up) + AND mask
+    const bmpFrames = frames.map(({ size, data }) => {
+        const pixelCount  = size * size;
+        const rowBytes    = size * 4;                    // 4 bytes per pixel (BGRA)
+        const andMaskRowBytes = Math.ceil(size / 8) * 4; // padded to 4-byte boundary
+        const andMaskSize = andMaskRowBytes * size;
+        const bmpSize     = 40 + pixelCount * 4 + andMaskSize;
+        const buf         = new ArrayBuffer(bmpSize);
+        const view        = new DataView(buf);
+
+        // BITMAPINFOHEADER
+        view.setUint32(0,  40,          true);  // biSize
+        view.setInt32 (4,  size,        true);  // biWidth
+        view.setInt32 (8,  size * 2,    true);  // biHeight (×2 for XOR+AND masks)
+        view.setUint16(12, 1,           true);  // biPlanes
+        view.setUint16(14, 32,          true);  // biBitCount
+        view.setUint32(16, 0,           true);  // biCompression (BI_RGB)
+        view.setUint32(20, pixelCount * 4, true); // biSizeImage
+        view.setUint32(24, 0, true);             // biXPelsPerMeter
+        view.setUint32(28, 0, true);             // biYPelsPerMeter
+        view.setUint32(32, 0, true);             // biClrUsed
+        view.setUint32(36, 0, true);             // biClrImportant
+
+        // Pixel data – BMP is bottom-up, ICO uses BGRA
+        let offset = 40;
+        for (let row = size - 1; row >= 0; row--) {
+            for (let col = 0; col < size; col++) {
+                const i = (row * size + col) * 4;
+                view.setUint8(offset++, data[i + 2]); // B
+                view.setUint8(offset++, data[i + 1]); // G
+                view.setUint8(offset++, data[i + 0]); // R
+                view.setUint8(offset++, data[i + 3]); // A
+            }
+        }
+
+        // AND mask – all zeros (fully opaque; alpha channel handles transparency)
+        // offset already points past pixel data; just leave zeros (ArrayBuffer is zero-init)
+
+        return new Uint8Array(buf);
+    });
+
+    // ICONDIR header: reserved(2) + type(2) + count(2)
+    const numImages  = bmpFrames.length;
+    const headerSize = 6 + numImages * 16;
+    let dataOffset   = headerSize;
+
+    // Calculate total buffer size
+    const totalSize = headerSize + bmpFrames.reduce((sum, f) => sum + f.byteLength, 0);
+    const icoBuffer = new ArrayBuffer(totalSize);
+    const icoView   = new DataView(icoBuffer);
+    const icoBytes  = new Uint8Array(icoBuffer);
+
+    // ICONDIR
+    icoView.setUint16(0, 0, true); // reserved
+    icoView.setUint16(2, 1, true); // type: 1 = ICO
+    icoView.setUint16(4, numImages, true);
+
+    // ICONDIRENTRY for each frame
+    bmpFrames.forEach((frame, i) => {
+        const size = sizes[i];
+        const entryOffset = 6 + i * 16;
+        icoView.setUint8 (entryOffset + 0,  size === 256 ? 0 : size); // width  (0 = 256)
+        icoView.setUint8 (entryOffset + 1,  size === 256 ? 0 : size); // height (0 = 256)
+        icoView.setUint8 (entryOffset + 2,  0);    // color count (0 = no palette)
+        icoView.setUint8 (entryOffset + 3,  0);    // reserved
+        icoView.setUint16(entryOffset + 4,  1, true); // planes
+        icoView.setUint16(entryOffset + 6,  32, true); // bit count
+        icoView.setUint32(entryOffset + 8,  frame.byteLength, true); // size of image data
+        icoView.setUint32(entryOffset + 12, dataOffset,       true); // offset of image data
+
+        // Copy BMP data into ICO buffer
+        icoBytes.set(frame, dataOffset);
+        dataOffset += frame.byteLength;
+    });
+
+    return Promise.resolve(new Blob([icoBuffer], { type: 'image/x-icon' }));
+}
+
 /* ------------------------- IMAGE LOADING ------------------------- */
+
+/** Load a regular image file via object URL → HTMLImageElement */
 function loadImageFromFile(file) {
     return new Promise((resolve, reject) => {
-        if (!file || !file.type.startsWith('image/')) {
-            return reject(new Error('Invalid image file.'));
-        }
         const objectURL = URL.createObjectURL(file);
         const img = new Image();
-        img.onload = () => resolve({ imgElement: img, width: img.width, height: img.height, objectURL });
-        img.onerror = () => {
-            URL.revokeObjectURL(objectURL);
-            reject(new Error('Failed to load image.'));
-        };
+        img.onload  = () => resolve({ imgElement: img, width: img.width, height: img.height, objectURL });
+        img.onerror = () => { URL.revokeObjectURL(objectURL); reject(new Error('Failed to load image.')); };
         img.src = objectURL;
     });
 }
 
-/* HEIC support wrapper (uses heic2any if available) */
-async function loadImageMaybeHeic(file) {
-    const isHeic = file.type === 'image/heic' || file.type === 'image/heif' ||
-                   (file.name && (file.name.toLowerCase().endsWith('.heic') || file.name.toLowerCase().endsWith('.heif')));
-    if (isHeic && typeof heic2any !== 'undefined') {
-        const convertedBlob = await heic2any({ blob: file, toType: 'image/jpeg', quality: 0.9 });
-        const newFile = new File([convertedBlob], file.name.replace(/\.(heic|heif)$/i, '.jpg'), { type: 'image/jpeg' });
-        return await loadImageFromFile(newFile);
-    } else {
-        return await loadImageFromFile(file);
+/** Load a TIFF file using UTIF.js → HTMLImageElement via canvas */
+async function loadTiff(file) {
+    if (typeof UTIF === 'undefined') {
+        throw new Error('UTIF.js not loaded. Make sure assets/libs/UTIF.js exists.');
     }
-}
+    const arrayBuffer = await file.arrayBuffer();
+    const ifds = UTIF.decode(arrayBuffer);
+    if (!ifds || ifds.length === 0) throw new Error('Could not decode TIFF file.');
 
-/* ------------------------- ADD / REMOVE FILES ------------------------- */
-async function addFiles(fileArray) {
-    const validFiles = Array.from(fileArray).filter(f => f.type.startsWith('image/'));
-    if (validFiles.length === 0) {
-        showError('No valid image files selected.');
-        return;
-    }
-    noImageMsg.style.display = 'none';
-    for (const file of validFiles) {
-        try {
-            const { imgElement, width, height, objectURL } = await loadImageMaybeHeic(file);
-            const newEntry = {
-                id: ++counter,
-                file,
-                imgElement,
-                width,
-                height,
-                objectURL
-            };
-            uploadedImages.push(newEntry);
-            renderFileItem(newEntry);
-        } catch (err) {
-            showError(`Skipping ${file.name}: ${err.message}`);
-        }
-    }
-    updateQueueUI();
-}
+    // Decode first page
+    UTIF.decodeImage(arrayBuffer, ifds[0]);
+    const rgba = UTIF.toRGBA8(ifds[0]);
+    const width  = ifds[0].width;
+    const height = ifds[0].height;
 
-function removeFile(id) {
-    const idx = uploadedImages.findIndex(img => img.id === id);
-    if (idx > -1) {
-        URL.revokeObjectURL(uploadedImages[idx].objectURL);
-        uploadedImages.splice(idx, 1);
-    }
-    renderFileList();
-    updateQueueUI();
-}
+    // Paint onto canvas → get object URL
+    const canvas = document.createElement('canvas');
+    canvas.width  = width;
+    canvas.height = height;
+    const ctx = canvas.getContext('2d');
+    const imageData = ctx.createImageData(width, height);
+    imageData.data.set(rgba);
+    ctx.putImageData(imageData, 0, 0);
 
-function clearQueue() {
-    revokeAllImageURLs();
-    uploadedImages = [];
-    renderFileList();
-    updateQueueUI();
-    resetResultArea();
-}
-
-function updateQueueUI() {
-    clearQueueBtn.style.display = uploadedImages.length > 0 ? 'block' : 'none';
-    if (uploadedImages.length === 0) {
-        noImageMsg.style.display = 'block';
-    }
-}
-
-/* ------------------------- RENDER QUEUE LIST ------------------------- */
-function renderFileItem(item) {
-    const div = document.createElement('div');
-    div.className = 'file-item';
-    div.dataset.id = item.id;
-    div.innerHTML = `
-        <img src="${item.objectURL}" alt="thumb" class="file-thumb">
-        <div class="file-info">
-            <div class="file-name">${item.file.name}</div>
-            <div class="file-meta">${item.width}×${item.height} | ${(item.file.size / 1024).toFixed(1)} KB</div>
-        </div>
-        <button class="remove-btn" data-id="${item.id}">✕</button>
-    `;
-    fileListDiv.appendChild(div);
-    // Event listener for remove button
-    div.querySelector('.remove-btn').addEventListener('click', (e) => {
-        e.stopPropagation();
-        removeFile(item.id);
+    return new Promise((resolve, reject) => {
+        canvas.toBlob(blob => {
+            if (!blob) return reject(new Error('Failed to create preview from TIFF.'));
+            const objectURL = URL.createObjectURL(blob);
+            const img = new Image();
+                        img.onload  = () => resolve({ imgElement: img, width, height, objectURL });
+            img.onerror = () => { URL.revokeObjectURL(objectURL); reject(new Error('Failed to load TIFF preview.')); };
+            img.src = objectURL;
+        }, 'image/png');
     });
 }
 
-function renderFileList() {
+/** Load a HEIC/HEIF file using heic2any → HTMLImageElement */
+async function loadHeic(file) {
+    if (typeof heic2any === 'undefined') {
+        throw new Error('heic2any not loaded. Make sure assets/libs/heic2any.min.js exists.');
+    }
+    const blob = await heic2any({ blob: file, toType: 'image/jpeg', quality: 0.92 });
+    const outputBlob = Array.isArray(blob) ? blob[0] : blob;
+    return loadImageFromFile(outputBlob);
+}
+
+/** Unified loader – picks the right strategy based on file type */
+async function loadAnyImage(file) {
+    const name = file.name.toLowerCase();
+    const type = file.type.toLowerCase();
+
+    if (type === 'image/tiff' || name.endsWith('.tif') || name.endsWith('.tiff')) {
+        return loadTiff(file);
+    }
+    if (type === 'image/heic' || type === 'image/heif' ||
+        name.endsWith('.heic') || name.endsWith('.heif')) {
+        return loadHeic(file);
+    }
+    return loadImageFromFile(file);
+}
+
+/* ------------------------- QUEUE MANAGEMENT ------------------------- */
+
+function renderQueue() {
     fileListDiv.innerHTML = '';
-    uploadedImages.forEach(item => renderFileItem(item));
+    noImageMsg.style.display  = uploadedImages.length === 0 ? 'block' : 'none';
+    clearQueueBtn.style.display = uploadedImages.length === 0 ? 'none' : 'block';
+
+    uploadedImages.forEach(item => {
+        const row = document.createElement('div');
+        row.className = 'file-item';
+        row.dataset.id = item.id;
+        row.innerHTML = `
+            <img src="${item.objectURL}" alt="${item.file.name}" class="file-thumb">
+            <div class="file-info">
+                <span class="file-name">${item.file.name}</span>
+                <span class="file-meta">${item.width}×${item.height} · ${(item.file.size / 1024).toFixed(1)} KB</span>
+            </div>
+            <button class="remove-btn" data-id="${item.id}" title="Remove">✕</button>
+        `;
+        fileListDiv.appendChild(row);
+    });
+}
+
+async function addFiles(files) {
+    for (const file of files) {
+        if (!file.type.startsWith('image/') &&
+            !file.name.match(/\.(heic|heif|tif|tiff)$/i)) continue;
+        try {
+            const { imgElement, width, height, objectURL } = await loadAnyImage(file);
+            uploadedImages.push({ id: ++counter, file, imgElement, width, height, objectURL });
+        } catch (err) {
+            showError(`Could not load "${file.name}": ${err.message}`);
+        }
+    }
+    renderQueue();
+}
+
+function removeItem(id) {
+    const idx = uploadedImages.findIndex(i => i.id === id);
+    if (idx === -1) return;
+    URL.revokeObjectURL(uploadedImages[idx].objectURL);
+    uploadedImages.splice(idx, 1);
+    renderQueue();
 }
 
 /* ------------------------- CONVERSION ------------------------- */
+
+function outputExtension(mime) {
+    return { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp','image/avif': 'avif', 'image/tiff': 'tiff', 'image/x-icon': 'ico' }[mime] || 'bin';
+}
+
 async function convertAll() {
-    if (uploadedImages.length === 0) {
-        showError('Please add at least one image.');
-        return;
-    }
-    errorMsgDiv.style.display = 'none';
+    if (uploadedImages.length === 0) { showError('Add at least one image first.'); return; }
+
     revokeResultURLs();
-    results = [];
+    resultsListDiv.innerHTML = '';
+    resultArea.style.display = 'none';
+    downloadAllBtn.style.display = 'none';
+    convertBtn.disabled = true;
+    convertBtn.innerText = 'Converting…';
 
-    const outputMime = outputFormatSelect.value;
-    let quality = (outputMime !== 'image/png') ? parseFloat(qualitySlider.value) : null;
-    if (quality && (isNaN(quality) || quality < 0.1)) quality = 0.85;
+    const fmt     = outputFormatSelect.value;
+    const quality = parseFloat(qualitySlider.value);
+    const maxW    = parseInt(maxWidthInput.value)  || 0;
+    const maxH    = parseInt(maxHeightInput.value) || 0;
 
-    let maxW = maxWidthInput.value.trim() === '' ? null : parseInt(maxWidthInput.value);
-    let maxH = maxHeightInput.value.trim() === '' ? null : parseInt(maxHeightInput.value);
-    if (maxW && (isNaN(maxW) || maxW <= 0)) maxW = null;
-    if (maxH && (isNaN(maxH) || maxH <= 0)) maxH = null;
-
-    for (const imgData of uploadedImages) {
+    for (const item of uploadedImages) {
         try {
-            const { width, height, resized } = calcNewDimensions(imgData.width, imgData.height, maxW, maxH);
-            const canvas = document.createElement('canvas');
-            canvas.width = width;
-            canvas.height = height;
-            const ctx = canvas.getContext('2d');
-            if (outputMime === 'image/jpeg') {
-                ctx.fillStyle = '#FFFFFF';
-                ctx.fillRect(0, 0, width, height);
+            const { width, height } = calcNewDimensions(item.width, item.height, maxW, maxH);
+            let blob;
+
+            if (fmt === 'image/tiff') {
+                blob = await encodeTiff(item.imgElement, width, height);
+            } else if (fmt === 'image/avif') {
+                blob = await encodeAvif(item.imgElement, width, height, quality);
+            } else if (fmt === 'image/x-icon') {
+                blob = await encodeIco(item.imgElement);
+            } else {
+                blob = await encodeViaCanvas(item.imgElement, width, height, fmt, quality);
             }
-            ctx.drawImage(imgData.imgElement, 0, 0, width, height);
 
-            const blob = await new Promise((resolve, reject) => {
-                canvas.toBlob((b) => b ? resolve(b) : reject(new Error('Blob failed')), outputMime, quality);
-            });
-
+            const ext  = outputExtension(fmt);
+            const base = item.file.name.replace(/\.[^.]+$/, '');
+            const name = `${base}.${ext}`;
             const outputURL = URL.createObjectURL(blob);
-            const baseName = imgData.file.name.replace(/\.[^/.]+$/, '') + '_converted';
-            const ext = outputMime === 'image/png' ? '.png' : (outputMime === 'image/webp' ? '.webp' : '.jpg');
-            const outputName = baseName + ext;
 
-            results.push({
-                id: imgData.id,
-                blob,
-                outputURL,
-                name: outputName,
-                sizeKB: (blob.size / 1024).toFixed(2),
-                originalName: imgData.file.name,
-                originalSizeKB: (imgData.file.size / 1024).toFixed(2),
-                dimensions: `${width}×${height}`,
-                resized
-            });
+            results.push({ id: item.id, blob, outputURL, name, sizeKB: (blob.size / 1024).toFixed(1) });
+
+            // Render result row
+            const row = document.createElement('div');
+            row.className = 'result-item';
+            row.innerHTML = `
+                <img src="${outputURL}" alt="${name}" class="result-thumb">
+                <div class="file-info">
+                    <span class="file-name">${name}</span>
+                    <span class="file-meta">${width}×${height} · ${(blob.size / 1024).toFixed(1)} KB</span>
+                </div>
+                <a href="${outputURL}" download="${name}" class="btn-download-single" title="Download">⬇</a>
+            `;
+            resultsListDiv.appendChild(row);
+
         } catch (err) {
-            showError(`Error converting ${imgData.file.name}: ${err.message}`);
+            showError(`"${item.file.name}" failed: ${err.message}`);
         }
     }
 
-    displayResults();
-}
-
-function displayResults() {
-    resultsListDiv.innerHTML = '';
-    if (results.length === 0) {
-        resultArea.style.display = 'none';
-        return;
-    }
-    results.forEach(r => {
-        const div = document.createElement('div');
-        div.className = 'result-item';
-        div.innerHTML = `
-            <img src="${r.outputURL}" class="result-thumb" alt="result">
-            <div class="result-info">
-                <div class="result-name">${r.name}</div>
-                <div class="result-stats">
-                    ${r.dimensions} | ${r.sizeKB} KB
-                    (was ${r.originalSizeKB} KB)
-                    ${r.resized ? ' <span style="color:#FD7E14;">resized</span>' : ''}
-                </div>
-            </div>
-            <button class="download-single-btn" data-url="${r.outputURL}" data-name="${r.name}">⬇</button>
-        `;
-        resultsListDiv.appendChild(div);
-        div.querySelector('.download-single-btn').addEventListener('click', (e) => {
-            const url = e.target.dataset.url;
-            const name = e.target.dataset.name;
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = name;
-            a.click();
-        });
-    });
-
     resultArea.style.display = 'block';
-    downloadAllBtn.style.display = (results.length > 1) ? 'block' : 'none';
+    if (results.length > 1) downloadAllBtn.style.display = 'block';
+    convertBtn.disabled = false;
+    convertBtn.innerText = 'Convert All';
 }
 
-/* ------------------------- DOWNLOAD ALL AS ZIP ------------------------- */
+/* ------------------------- ZIP DOWNLOAD ------------------------- */
+
 async function downloadAllAsZip() {
     if (results.length === 0) return;
     const zip = new JSZip();
-    for (const r of results) {
-        zip.file(r.name, r.blob);
-    }
-    const content = await zip.generateAsync({ type: 'blob' });
-    const zipURL = URL.createObjectURL(content);
-    const a = document.createElement('a');
-    a.href = zipURL;
-    a.download = 'zorio_converted_images.zip';
+    for (const r of results) zip.file(r.name, r.blob);
+    const zipBlob = await zip.generateAsync({ type: 'blob' });
+    const url = URL.createObjectURL(zipBlob);
+    const a   = document.createElement('a');
+    a.href     = url;
+    a.download = 'zorio-converted.zip';
     a.click();
-    URL.revokeObjectURL(zipURL);
-}
-
-function resetResultArea() {
-    resultArea.style.display = 'none';
-    revokeResultURLs();
-    results = [];
-    resultsListDiv.innerHTML = '';
+    setTimeout(() => URL.revokeObjectURL(url), 10000);
 }
 
 /* ------------------------- EVENT LISTENERS ------------------------- */
+
 selectFileBtn.addEventListener('click', () => fileInput.click());
-uploadArea.addEventListener('click', () => fileInput.click());
 
-uploadArea.addEventListener('dragover', (e) => {
+uploadArea.addEventListener('click', e => {
+    if (e.target !== selectFileBtn) fileInput.click();
+});
+
+fileInput.addEventListener('change', () => {
+    if (fileInput.files.length) addFiles(Array.from(fileInput.files));fileInput.value = '';
+});
+
+uploadArea.addEventListener('dragover', e => { e.preventDefault(); uploadArea.classList.add('drag-over'); });
+uploadArea.addEventListener('dragleave', ()  => uploadArea.classList.remove('drag-over'));
+uploadArea.addEventListener('drop', e => {
     e.preventDefault();
-    uploadArea.style.borderColor = '#FD7E14';
-    uploadArea.style.background = 'rgba(253,126,20,0.1)';
-});
-uploadArea.addEventListener('dragleave', () => {
-    uploadArea.style.borderColor = 'rgba(253,126,20,0.5)';
-    uploadArea.style.background = 'rgba(0,0,0,0.3)';
-});
-uploadArea.addEventListener('drop', (e) => {
-    e.preventDefault();
-    uploadArea.style.borderColor = 'rgba(253,126,20,0.5)';
-    uploadArea.style.background = 'rgba(0,0,0,0.3)';
-    if (e.dataTransfer.files.length > 0) {
-        addFiles(e.dataTransfer.files);
-    }
+    uploadArea.classList.remove('drag-over');
+    if (e.dataTransfer.files.length) addFiles(Array.from(e.dataTransfer.files));
 });
 
-fileInput.addEventListener('change', (e) => {
-    if (e.target.files.length > 0) {
-        addFiles(e.target.files);
-        fileInput.value = '';  // allow re-selecting same files
-    }
+fileListDiv.addEventListener('click', e => {
+    const btn = e.target.closest('.remove-btn');
+    if (btn) removeItem(parseInt(btn.dataset.id));
 });
 
-clearQueueBtn.addEventListener('click', clearQueue);
-
-outputFormatSelect.addEventListener('change', toggleQualityControl);
-qualitySlider.addEventListener('input', updateQualitySlider);
-updateQualitySlider();
-toggleQualityControl();
-
-convertBtn.addEventListener('click', async () => {
-    const originalText = convertBtn.innerText;
-    convertBtn.innerText = 'Converting...';
-    convertBtn.disabled = true;
-    try {
-        await convertAll();
-    } catch (e) {
-        console.warn(e);
-    } finally {
-        convertBtn.innerText = originalText;
-        convertBtn.disabled = false;
-    }
-});
-
-downloadAllBtn.addEventListener('click', downloadAllAsZip);
-
-window.addEventListener('beforeunload', () => {
+clearQueueBtn.addEventListener('click', () => {
     revokeAllImageURLs();
     revokeResultURLs();
+    resultsListDiv.innerHTML = '';
+    resultArea.style.display = 'none';
+    downloadAllBtn.style.display = 'none';
+    renderQueue();
 });
 
-resetResultArea();
+convertBtn.addEventListener('click', convertAll);
+downloadAllBtn.addEventListener('click', downloadAllAsZip);
+
+outputFormatSelect.addEventListener('change', toggleQualityControl);
+
+qualitySlider.addEventListener('input', updateQualitySlider);
+
+/* ------------------------- INIT ------------------------- */
+toggleQualityControl();
+updateQualitySlider();
+renderQueue();
