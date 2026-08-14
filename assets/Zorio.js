@@ -41,10 +41,16 @@ function closeModal(modal) {
 }
 
 function showStep(stepId) {
-  document
-    .querySelectorAll(".auth-step")
-    .forEach((s) => s.classList.remove("auth-step--active"));
-  document.getElementById(stepId)?.classList.add("auth-step--active");
+  document.querySelectorAll(".auth-step").forEach((s) => {
+    s.classList.remove("auth-step--active");
+    s.classList.remove("active");
+  });
+
+  const step = document.getElementById(stepId);
+  if (step) {
+    step.classList.add("auth-step--active");
+    step.classList.add("active");
+  }
 }
 /* :::::::::::::::::::::::::: SIDEBAR COMPONENT :::::::::::::::::::::::::: */
 function getSidebarComponent() {
@@ -55,13 +61,18 @@ function getSidebarComponent() {
         document.getElementById("auth-email").value = "";
         document.getElementById("auth-password-login").value = "";
         document.getElementById("auth-password-register").value = "";
-        document.getElementById("auth-confirm-password")?.value = "";
+
+        const confirmPass = document.getElementById("auth-confirm-password");
+        if (confirmPass) confirmPass.value = "";
+
         document
           .querySelectorAll(".auth-error")
           .forEach((el) => el.classList.add("hidden"));
+
         showStep("step-1");
         openModal(authOverlay);
       });
+
       sidebarComponent.addEventListener("logout-request", () => logout());
       sidebarComponent.addEventListener("today-item-click", (e) => {
         console.log("[Zorio] today-item-click", e.detail);
@@ -183,12 +194,10 @@ async function logout() {
     currentProfile = null;
     syncSidebarComponent();
 
-    appContainer.classList.add("app-hidden");
     authOverlay.querySelector("#auth-email").value = "";
     authOverlay.querySelector("#auth-password-login").value = "";
     authOverlay.querySelector("#auth-password-register").value = "";
     showStep("step-1");
-    openModal(authOverlay);
   } finally {
     hideGlobalLoader();
   }
@@ -242,15 +251,24 @@ async function restoreSession() {
 function setupAuthListeners() {
   document.getElementById("auth-continue-btn").addEventListener("click", () => {
     const email = document.getElementById("auth-email").value.trim();
+    const err = document.getElementById("auth-error-1");
+    err.classList.add("hidden");
+
     if (!email) {
-      const err = document.getElementById("auth-error-1");
       err.textContent = "Please enter your email.";
       err.classList.remove("hidden");
       return;
     }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      err.textContent = "Please enter a valid email address.";
+      err.classList.remove("hidden");
+      return;
+    }
+
     document.getElementById("login-email-display").textContent = email;
     document.getElementById("register-email-display").textContent = email;
-    document.getElementById("auth-error-1").classList.add("hidden");
     showStep("step-2-login");
   });
 
@@ -261,6 +279,12 @@ function setupAuthListeners() {
       const password = document.getElementById("auth-password-login").value;
       const errEl = document.getElementById("auth-error-login");
       errEl.classList.add("hidden");
+
+      if (!password) {
+        errEl.textContent = "Password required.";
+        errEl.classList.remove("hidden");
+        return;
+      }
 
       showGlobalLoader();
 
@@ -293,13 +317,28 @@ function setupAuthListeners() {
     .addEventListener("click", async () => {
       const email = document.getElementById("auth-email").value.trim();
       const password = document.getElementById("auth-password-register").value;
+      const confirmPassword = document
+        .getElementById("auth-confirm-password")
+        .value.trim();
       const firstName = document.getElementById("auth-first-name").value.trim();
       const lastName = document.getElementById("auth-last-name").value.trim();
       const errEl = document.getElementById("auth-error-register");
       errEl.classList.add("hidden");
 
+      if (!firstName || !lastName) {
+        errEl.textContent = "First and last name are required.";
+        errEl.classList.remove("hidden");
+        return;
+      }
+
       if (password.length < 6) {
         errEl.textContent = "Password must be at least 6 characters.";
+        errEl.classList.remove("hidden");
+        return;
+      }
+
+      if (password !== confirmPassword) {
+        errEl.textContent = "Passwords do not match.";
         errEl.classList.remove("hidden");
         return;
       }
@@ -349,7 +388,13 @@ function setupAuthListeners() {
     .getElementById("auth-reset-btn")
     .addEventListener("click", async () => {
       const email = document.getElementById("forgot-email").value.trim();
-      if (!email) return;
+      if (!email) {
+        const msg = document.getElementById("forgot-message");
+        msg.textContent = "Please enter your email.";
+        msg.classList.remove("hidden");
+        msg.style.color = "#FF5555";
+        return;
+      }
 
       showGlobalLoader();
 
@@ -375,6 +420,18 @@ function setupAuthListeners() {
   document
     .getElementById("auth-back-to-login")
     .addEventListener("click", () => showStep("step-2-login"));
+
+  authOverlay.addEventListener("click", (e) => {
+    if (e.target === authOverlay) {
+      closeModal(authOverlay);
+    }
+  });
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && authOverlay.style.display === "flex") {
+      closeModal(authOverlay);
+    }
+  });
 }
 
 /* :::::::::::::::::::::::::: IMAGE CONVERTER :::::::::::::::::::::::::: */

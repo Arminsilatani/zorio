@@ -1,5 +1,9 @@
-/* :::::::::::::::::::::::::: FONTS :::::::::::::::::::::::::: */
+/* ============================================================
+   Zorio Image Converter — Complete CSS
+   (بدون تداخل، یکپارچه، آماده استفاده)
+   ============================================================ */
 
+/* :::::::::::::::::::::::::: FONTS :::::::::::::::::::::::::: */
 @font-face {
   font-family: "Kalameh";
   src:
@@ -20,13 +24,13 @@
   font-display: swap;
 }
 
-/* :::::::::::::::::::::::::: RESET & BASE :::::::::::::::::::::::::: */
-
+/* :::::::::::::::::::::::::: RESET & VARIABLES :::::::::::::::::::::::::: */
 :root {
   --zorio-accent: #fd7e14;
-  --accent: #fd7e14;
+  --accent: #fd7e14; /* رنگ اصلی اپلیکیشن و مودال */
   --text: #f5f5f5;
   --border: rgba(255, 255, 255, 0.08);
+  --subtle: #b9b9d0;
   --bg: #0d0d0d;
   --loader-dot-size: 8px;
   --loader-anim-speed: 1.5s;
@@ -39,7 +43,7 @@
 }
 
 body {
-  background: #0d0d0d;
+  background: var(--bg);
   font-family:
     "Kalameh",
     system-ui,
@@ -53,43 +57,42 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-  color: #f5f5f5;
+  color: var(--text);
+}
+
+body.modal-open {
+  overflow: hidden;
 }
 
 /* :::::::::::::::::::::::::: SCROLLBAR :::::::::::::::::::::::::: */
-
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
-
 ::-webkit-scrollbar-track {
   background: #1e1e1e;
   border-radius: 10px;
 }
-
 ::-webkit-scrollbar-thumb {
-  background: #fd7e14;
+  background: var(--accent);
   border-radius: 10px;
 }
 
 /* :::::::::::::::::::::::::: UTILITY :::::::::::::::::::::::::: */
-
 .hidden {
   display: none !important;
 }
-
 .app-hidden {
   display: none !important;
 }
 
-/* :::::::::::::::::::::::::: CARD LAYOUT :::::::::::::::::::::::::: */
-
+/* :::::::::::::::::::::::::: MAIN CARD LAYOUT :::::::::::::::::::::::::: */
 .premium-card {
   max-width: 1400px;
   width: 100%;
   background: rgba(18, 18, 24, 0.75);
   backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
   border-radius: 2rem;
   border: 1px solid rgba(253, 126, 20, 0.25);
   box-shadow:
@@ -99,8 +102,6 @@ body {
   transition: all 0.3s ease;
   margin-bottom: 1rem;
 }
-
-/* :::::::::::::::::::::::::: TWO-COLUMN GRID :::::::::::::::::::::::::: */
 
 .two-col-grid {
   display: grid;
@@ -113,31 +114,28 @@ body {
   body {
     padding: 1rem 1rem 0 1rem;
   }
-
   .two-col-grid {
     grid-template-columns: 1fr;
     gap: 1.8rem;
     padding: 1.5rem;
   }
-
   .glass-header h1 {
     font-size: 1.5rem;
     gap: 8px;
   }
-
   .logo-h1 {
     height: 1.8rem;
   }
 }
 
 /* :::::::::::::::::::::::::: HEADER :::::::::::::::::::::::::: */
-
 .glass-header {
   background: rgba(10, 10, 15, 0.7);
   padding: 1.5rem 2rem;
   text-align: center;
   border-bottom: 1px solid rgba(253, 126, 20, 0.3);
   backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
 
 .glass-header h1 {
@@ -164,7 +162,7 @@ body {
 
 .badge-premium {
   background: rgba(253, 126, 20, 0.125);
-  border: 1px solid #fd7e14;
+  border: 1px solid var(--accent);
   border-radius: 100px;
   padding: 0.25rem 1rem;
   font-size: 0.75rem;
@@ -175,13 +173,12 @@ body {
 
 .sub-premium {
   font-size: 0.85rem;
-  color: #b9b9d0;
+  color: var(--subtle);
   margin-top: 10px;
   letter-spacing: 0.3px;
 }
 
 /* :::::::::::::::::::::::::: TOOL HEADER :::::::::::::::::::::::::: */
-
 .tool-header {
   display: flex;
   align-items: center;
@@ -225,10 +222,10 @@ body {
 }
 
 /* :::::::::::::::::::::::::: SECTIONS :::::::::::::::::::::::::: */
-
 .premium-section {
   background: rgba(12, 12, 18, 0.75);
   backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
   border-radius: 1.5rem;
   padding: 1.5rem;
   border: 1px solid rgba(253, 126, 20, 0.2);
@@ -247,15 +244,13 @@ body {
   font-size: 1.4rem;
   font-weight: 900;
   margin-bottom: 1.5rem;
-  border-left: 2px solid #fd7e14;
+  border-left: 2px solid var(--accent);
   padding-left: 1rem;
-  border-right: none;
   color: #ffffff;
   letter-spacing: -0.2px;
 }
 
 /* :::::::::::::::::::::::::: UPLOAD ZONE :::::::::::::::::::::::::: */
-
 .upload-zone {
   border: 2px dashed rgba(253, 126, 20, 0.5);
   border-radius: 1.5rem;
@@ -268,7 +263,7 @@ body {
 }
 
 .upload-zone:hover {
-  border-color: #fd7e14;
+  border-color: var(--accent);
   background: rgba(253, 126, 20, 0.05);
   transform: scale(0.99);
 }
@@ -316,7 +311,6 @@ body {
 }
 
 /* :::::::::::::::::::::::::: FORM CONTROLS :::::::::::::::::::::::::: */
-
 .control-group {
   margin-bottom: 1.6rem;
 }
@@ -348,55 +342,60 @@ input[type="range"] {
 select:focus,
 input:focus {
   outline: none;
-  border-color: #fd7e14;
+  border-color: var(--accent);
   box-shadow: 0 0 0 2px rgba(253, 126, 20, 0.3);
 }
 
-/* :::::::::::::::::::::::::: RANGE SLIDER :::::::::::::::::::::::::: */
+/* حذف فلش‌های input عددی */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] {
+  -moz-appearance: textfield;
+}
 
+/* :::::::::::::::::::::::::: RANGE SLIDER :::::::::::::::::::::::::: */
 input[type="range"] {
   appearance: none;
   -webkit-appearance: none;
   width: 100%;
   height: 8px;
   border-radius: 10px;
-  background: linear-gradient(90deg, #fd7e14 85%, #1e1e2a 85%);
+  background: linear-gradient(90deg, var(--accent) 85%, #1e1e2a 85%);
   cursor: pointer;
 }
-
 input[type="range"]::-webkit-slider-runnable-track {
   height: 8px;
   border-radius: 10px;
 }
-
 input[type="range"]::-webkit-slider-thumb {
   -webkit-appearance: none;
   width: 18px;
   height: 18px;
-  background: #fd7e14;
+  background: var(--accent);
   border-radius: 50%;
   cursor: pointer;
   box-shadow: 0 0 8px rgba(253, 126, 20, 0.8);
   margin-top: -5px;
 }
-
 input[type="range"]::-moz-range-thumb {
   width: 18px;
   height: 18px;
-  background: #fd7e14;
+  background: var(--accent);
   border-radius: 50%;
   border: none;
 }
 
 /* :::::::::::::::::::::::::: BUTTONS :::::::::::::::::::::::::: */
-
 .btn-primary {
   background: linear-gradient(105deg, #fd7e14 0%, #e06a20 100%);
   border: none;
   color: white;
   padding: 0.85rem 1.5rem;
   border-radius: 2rem;
-  font-weight: bold;
+  font-weight: 400;
   font-size: 1rem;
   cursor: pointer;
   transition: all 0.25s;
@@ -405,26 +404,22 @@ input[type="range"]::-moz-range-thumb {
   box-shadow: 0 6px 14px rgba(253, 126, 20, 0.3);
   letter-spacing: 0.3px;
   font-family: "Kalameh", sans-serif;
-  font-weight: 400;
 }
-
 .btn-primary:hover {
   transform: translateY(-2px);
   box-shadow: 0 12px 22px rgba(253, 126, 20, 0.4);
   background: linear-gradient(105deg, #ffa64c, #f07c30);
 }
-
 .btn-primary:active {
   transform: translateY(1px);
 }
 
 .btn-download {
   background: #25253a;
-  border: 1px solid #fd7e14;
+  border: 1px solid var(--accent);
   box-shadow: none;
   margin-top: 1rem;
 }
-
 .btn-download:hover {
   background: #2f2f48;
   border-color: #ffb55c;
@@ -432,7 +427,6 @@ input[type="range"]::-moz-range-thumb {
 }
 
 /* :::::::::::::::::::::::::: RESULT AREA :::::::::::::::::::::::::: */
-
 .result-area {
   margin-top: 1.5rem;
   background: rgba(0, 0, 0, 0.4);
@@ -472,9 +466,6 @@ input[type="range"]::-moz-range-thumb {
 }
 
 /* :::::::::::::::::::::::::: FOOTER :::::::::::::::::::::::::: */
-
-/* :::::::::::::::::::::::::: CARD FOOTER NOTE :::::::::::::::::::::::::: */
-
 .footer-note {
   font-size: 0.75rem;
   text-align: center;
@@ -485,15 +476,12 @@ input[type="range"]::-moz-range-thumb {
   font-weight: 400;
 }
 
-/* :::::::::::::::::::::::::: PAGE FOOTER SIGNATURE :::::::::::::::::::::::::: */
-
 .footer {
   padding: 30px 0 30px;
   display: flex;
   justify-content: center;
   margin-top: auto;
 }
-
 .footer-signature {
   display: flex;
   align-items: center;
@@ -501,45 +489,36 @@ input[type="range"]::-moz-range-thumb {
   opacity: 0.7;
   transition: opacity 0.3s ease;
 }
-
 .footer-signature:hover {
   opacity: 1;
 }
-
 .crafted {
   font-size: 10px;
   color: #7a7a7a;
   letter-spacing: 0.08em;
 }
-
 .signature {
   height: 20px;
   transform: translateY(-2px);
   opacity: 0.85;
   filter: brightness(0.9) contrast(1.05);
 }
-
-/* :::::::::::::::::::::::::: FOOTER LINK OVERRIDE :::::::::::::::::::::::::: */
-
 .footer-signature a {
   display: contents;
   text-decoration: none;
   color: inherit;
 }
-
 .footer-signature a:hover {
   text-decoration: none;
 }
 
-/* :::::::::::::::::::::::::: BATCH QUEUE LIST :::::::::::::::::::::::::: */
-
+/* :::::::::::::::::::::::::: FILE QUEUE LIST :::::::::::::::::::::::::: */
 .file-list {
   display: flex;
   flex-direction: column;
   gap: 0.7rem;
   margin-top: 1.2rem;
 }
-
 .file-item {
   display: flex;
   align-items: center;
@@ -550,12 +529,10 @@ input[type="range"]::-moz-range-thumb {
   border: 1px solid #232333;
   transition: all 0.25s;
 }
-
 .file-item:hover {
-  border-color: #fd7e14;
+  border-color: var(--accent);
   background: #121224;
 }
-
 .file-thumb {
   width: 50px;
   height: 50px;
@@ -564,24 +541,20 @@ input[type="range"]::-moz-range-thumb {
   border: 1px solid #2e2e44;
   background: #07070f;
 }
-
 .file-info {
   flex: 1;
   font-size: 0.8rem;
   color: #c0c0e0;
 }
-
 .file-name {
   font-weight: 700;
   margin-bottom: 3px;
   color: #ffffff;
 }
-
 .file-meta {
   font-size: 0.7rem;
   color: #9494b8;
 }
-
 .remove-btn {
   background: none;
   border: 1px solid #4a2840;
@@ -592,7 +565,6 @@ input[type="range"]::-moz-range-thumb {
   border-radius: 0.5rem;
   transition: 0.2s;
 }
-
 .remove-btn:hover {
   background: #2a1a2a;
   border-color: #ff5e5e;
@@ -600,13 +572,11 @@ input[type="range"]::-moz-range-thumb {
 }
 
 /* :::::::::::::::::::::::::: RESULTS LIST :::::::::::::::::::::::::: */
-
 .results-list {
   display: flex;
   flex-direction: column;
   gap: 1rem;
 }
-
 .result-item {
   background: #0e0e1a;
   border-radius: 1rem;
@@ -616,7 +586,6 @@ input[type="range"]::-moz-range-thumb {
   gap: 12px;
   border: 1px solid #232338;
 }
-
 .result-thumb {
   width: 60px;
   height: 60px;
@@ -625,25 +594,21 @@ input[type="range"]::-moz-range-thumb {
   border: 1px solid #2e2e44;
   background: #050508;
 }
-
 .result-info {
   flex: 1;
   font-size: 0.8rem;
   color: #c0c0e0;
 }
-
 .result-name {
   font-weight: 700;
   margin-bottom: 3px;
   color: #ffffff;
 }
-
 .result-stats {
   font-size: 0.7rem;
 }
-
 .download-single-btn {
-  background: #fd7e14;
+  background: var(--accent);
   border: none;
   color: white;
   padding: 6px 12px;
@@ -653,108 +618,20 @@ input[type="range"]::-moz-range-thumb {
   font-family: "Kalameh", sans-serif;
   transition: 0.2s;
 }
-
 .download-single-btn:hover {
   background: #ffa64c;
 }
-
-/* :::::::::::::::::::::::::: CLEAR QUEUE BUTTON :::::::::::::::::::::::::: */
 
 #clearQueueBtn {
   width: 100%;
   background: #2b2b3a;
   border: 1px solid #4a4a5e;
 }
-
 #clearQueueBtn:hover {
   background: #3a3a4e;
 }
 
-/* :::::::::::::::::::::::::: MODAL & AUTH :::::::::::::::::::::::::: */
-
-.modal {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.85);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-}
-
-.modal-content {
-  background: #171717;
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  width: 90%;
-  max-width: 460px;
-  padding: 28px;
-  color: var(--text);
-}
-
-.modal-input {
-  width: 100%;
-  margin-bottom: 16px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid var(--border);
-  color: var(--text);
-  padding: 12px 14px;
-  border-radius: 8px;
-  font-family: inherit;
-}
-
-.modal-input:focus {
-  outline: none;
-  border-color: var(--accent);
-}
-
-.auth-step {
-  display: none;
-}
-
-.auth-step.active {
-  display: block;
-}
-
-.btn-secondary {
-  background: transparent;
-  border: 1px solid var(--border);
-  color: var(--text);
-  padding: 0.5rem 1rem;
-  border-radius: 2rem;
-  cursor: pointer;
-  font-family: inherit;
-}
-
-.btn-secondary.small {
-  padding: 0.4rem 0.8rem;
-  font-size: 0.85rem;
-}
-
-#app-container {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  width: 100%;
-  align-items: center;
-}
-
-/* =========================== AUTH OVERLAY STYLES =========================== */
-
-/* Only define these variables if not already in :root */
-:root {
-  --text: #f5f5f5;
-  --accent: #ff8fd1; /* fallback accent */
-  --border: rgba(255, 255, 255, 0.08);
-  --subtle: #b9b9d0;
-}
-
-/* Prevent body scroll when modal open */
-body.modal-open {
-  overflow: hidden;
-}
-
-/* The overlay container */
+/* :::::::::::::::::::::::::: MODAL & AUTH OVERLAY :::::::::::::::::::::::::: */
 .modal {
   display: none;
   position: fixed;
@@ -767,7 +644,6 @@ body.modal-open {
   align-items: center;
 }
 
-/* Glass panel */
 .modal-content,
 .auth-modal-content {
   background: rgba(255, 255, 255, 0.03);
@@ -787,12 +663,11 @@ body.modal-open {
   position: relative;
 }
 
-/* Narrower for auth */
 .auth-overlay .modal-content {
   max-width: 380px;
 }
 
-/* Custom scrollbar for WebKit */
+/* اسکرول‌بار مودال */
 .modal-content::-webkit-scrollbar,
 .auth-modal-content::-webkit-scrollbar {
   width: 6px;
@@ -807,7 +682,6 @@ body.modal-open {
   border-radius: 3px;
 }
 
-/* Entrance animation */
 @keyframes modalIn {
   from {
     opacity: 0;
@@ -819,7 +693,7 @@ body.modal-open {
   }
 }
 
-/* Auth header */
+/* :::::::::::::::::::::::::: AUTH COMPONENTS :::::::::::::::::::::::::: */
 .auth-header {
   margin-bottom: 24px;
   text-align: center;
@@ -842,7 +716,6 @@ body.modal-open {
   margin: 0;
 }
 
-/* Inputs and buttons */
 .auth-input {
   width: 100%;
   margin-bottom: 12px;
@@ -855,7 +728,7 @@ body.modal-open {
 }
 .auth-input:focus {
   border-color: var(--accent);
-  background: rgba(255, 143, 209, 0.04);
+  background: rgba(253, 126, 20, 0.04);
   outline: none;
 }
 .auth-input[readonly] {
@@ -894,7 +767,6 @@ body.modal-open {
   gap: 10px;
 }
 
-/* Messages and links */
 .auth-error {
   color: #ff5555;
   font-size: 0.8rem;
@@ -928,16 +800,15 @@ body.modal-open {
   margin: 10px 0;
 }
 
-/* Steps */
 .auth-step {
   display: none;
   text-align: left;
 }
-.auth-step--active {
+.auth-step--active,
+.auth-step.active {
   display: block;
 }
 
-/* Email display read‑only field */
 .auth-email-display {
   font-size: 0.85rem;
   color: #888;
@@ -945,28 +816,16 @@ body.modal-open {
   word-break: break-all;
 }
 
-/* Utility */
-.hidden {
-  display: none !important;
-}
-.app-hidden {
-  display: none !important;
-}
-
-/* :::::::::::::::::::::::::: SPINNER REMOVAL :::::::::::::::::::::::::: */
-
-input[type="number"]::-webkit-inner-spin-button,
-input[type="number"]::-webkit-outer-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
-}
-
-input[type="number"] {
-  -moz-appearance: textfield;
+/* :::::::::::::::::::::::::: APP CONTAINER :::::::::::::::::::::::::: */
+#app-container {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  width: 100%;
+  align-items: center;
 }
 
 /* :::::::::::::::::::::::::: NEON DOTS LOADER :::::::::::::::::::::::::: */
-
 .fullpage-loader {
   position: fixed;
   inset: 0;
@@ -1000,42 +859,34 @@ input[type="number"] {
   animation-delay: 0s;
   animation-duration: calc(var(--loader-anim-speed) * 0.8);
 }
-
 .lds-grid div:nth-child(2) {
   animation-delay: calc(var(--loader-anim-speed) * 0.2);
   animation-duration: calc(var(--loader-anim-speed) * 0.93);
 }
-
 .lds-grid div:nth-child(3) {
   animation-delay: calc(var(--loader-anim-speed) * 0.47);
   animation-duration: calc(var(--loader-anim-speed) * 0.73);
 }
-
 .lds-grid div:nth-child(4) {
   animation-delay: calc(var(--loader-anim-speed) * 0.07);
   animation-duration: calc(var(--loader-anim-speed) * 0.87);
 }
-
 .lds-grid div:nth-child(5) {
   animation-delay: calc(var(--loader-anim-speed) * 0.33);
   animation-duration: calc(var(--loader-anim-speed) * 1.07);
 }
-
 .lds-grid div:nth-child(6) {
   animation-delay: calc(var(--loader-anim-speed) * 0.13);
   animation-duration: calc(var(--loader-anim-speed) * 0.8);
 }
-
 .lds-grid div:nth-child(7) {
   animation-delay: calc(var(--loader-anim-speed) * 0.53);
   animation-duration: calc(var(--loader-anim-speed) * 1);
 }
-
 .lds-grid div:nth-child(8) {
   animation-delay: calc(var(--loader-anim-speed) * 0.27);
   animation-duration: calc(var(--loader-anim-speed) * 0.87);
 }
-
 .lds-grid div:nth-child(9) {
   animation-delay: calc(var(--loader-anim-speed) * 0.4);
   animation-duration: calc(var(--loader-anim-speed) * 0.73);
@@ -1054,17 +905,15 @@ input[type="number"] {
     opacity: 0.2;
     box-shadow: 0 0 calc(var(--loader-dot-size) * 0.25) var(--accent);
   }
-
   50% {
     opacity: 1;
     box-shadow: 0 0 calc(var(--loader-dot-size) * 0.75) var(--accent);
   }
 }
 
-/* :::::::::::::::::::::::::: UTILITY :::::::::::::::::::::::::: */
-
+/* :::::::::::::::::::::::::: SMALL UTILITIES :::::::::::::::::::::::::: */
 .glow-text {
-  color: #fd7e14;
+  color: var(--accent);
 }
 
 hr {

@@ -179,172 +179,127 @@
       </div>
     </div>
 
-    <!-- :::::::::::::::::::::::::: AUTH OVERLAY (MODAL) :::::::::::::::::::::::::: -->
-    <div id="auth-overlay" class="modal" style="display: none">
-      <div class="modal-content" style="max-width: 420px; width: 90%">
-        <!-- :::::::::::::::::::::::::: AUTH STEP 1: EMAIL :::::::::::::::::::::::::: -->
+    <!-- :::::::::::::::::::::::::: AUTH OVERLAY (GLASSMORPHISM) :::::::::::::::::::::::::: -->
+    <div id="auth-overlay" class="modal auth-overlay">
+      <div class="modal-content auth-modal-content">
+        <!-- برندینگ (لوگو، تایتل، زیرنویس) -->
+        <div class="auth-header">
+          <img
+            src="assets/Zo.svg"
+            alt="Zorio Logo"
+            class="auth-logo"
+            onerror="this.style.display = 'none'"
+          />
+          <h1 class="auth-branding">Zorio</h1>
+          <p class="auth-subtitle">Image Converter</p>
+        </div>
+
+        <!-- مرحله ۱: ایمیل -->
         <div id="step-1" class="auth-step active">
-          <h3 style="color: var(--accent); margin-bottom: 20px">
-            Sign In / Register
-          </h3>
           <input
             type="email"
             id="auth-email"
-            class="modal-input"
-            placeholder="Your email"
+            class="auth-input"
+            placeholder="Email address"
             autocomplete="email"
           />
-          <p
-            id="auth-error-1"
-            style="
-              color: #ff5555;
-              font-size: 13px;
-              margin-top: 8px;
-              display: none;
-            "
-          ></p>
-          <button
-            id="auth-continue-btn"
-            class="btn-primary"
-            style="width: 100%; margin-top: 12px"
-          >
+          <p id="auth-error-1" class="auth-error hidden"></p>
+          <button id="auth-continue-btn" class="auth-btn auth-btn--primary">
             Continue
           </button>
         </div>
 
-        <!-- :::::::::::::::::::::::::: AUTH STEP 2: LOGIN :::::::::::::::::::::::::: -->
-        <div id="step-2-login" class="auth-step hidden">
-          <h3 style="color: var(--accent); margin-bottom: 8px">Welcome back</h3>
-          <p
-            style="font-size: 13px; color: #888; margin-bottom: 20px"
-            id="login-email-display"
-          ></p>
+        <!-- مرحله ۲: ورود -->
+        <div id="step-2-login" class="auth-step">
+          <p id="login-email-display" class="auth-email-display"></p>
           <input
             type="password"
             id="auth-password-login"
-            class="modal-input"
+            class="auth-input"
             placeholder="Password"
             autocomplete="current-password"
           />
-          <p
-            id="auth-error-login"
-            style="
-              color: #ff5555;
-              font-size: 13px;
-              margin-top: 8px;
-              display: none;
-            "
-          ></p>
-          <div
-            style="
-              display: flex;
-              justify-content: space-between;
-              margin-top: 12px;
-            "
-          >
-            <button id="auth-back-to-email" class="btn-secondary small">
+          <p id="auth-error-login" class="auth-error hidden"></p>
+          <div class="auth-row">
+            <button
+              id="auth-back-to-email"
+              class="auth-btn auth-btn--secondary auth-btn--small"
+            >
               Back
             </button>
-            <button id="auth-signin-btn" class="btn-primary">Sign In</button>
+            <button id="auth-signin-btn" class="auth-btn auth-btn--primary">
+              Sign In
+            </button>
           </div>
-          <p style="margin-top: 16px; font-size: 13px; color: #888">
+          <p class="auth-link-row">
             Forgot password?
-            <a
-              href="#"
-              id="forgot-link"
-              style="color: var(--accent); text-decoration: none"
-              >Reset</a
-            >
+            <a href="#" id="forgot-link" class="auth-link">Reset</a>
           </p>
         </div>
 
-        <!-- :::::::::::::::::::::::::: AUTH STEP 2: REGISTER :::::::::::::::::::::::::: -->
-        <div id="step-2-register" class="auth-step hidden">
-          <h3 style="color: var(--accent); margin-bottom: 8px">
-            Create Account
-          </h3>
-          <p
-            style="font-size: 13px; color: #888; margin-bottom: 20px"
-            id="register-email-display"
-          ></p>
+        <!-- مرحله ۲: ثبت‌نام -->
+        <div id="step-2-register" class="auth-step">
+          <p id="register-email-display" class="auth-email-display"></p>
           <input
             type="text"
             id="auth-first-name"
-            class="modal-input"
+            class="auth-input"
             placeholder="First Name"
-            style="margin-bottom: 12px"
           />
           <input
             type="text"
             id="auth-last-name"
-            class="modal-input"
+            class="auth-input"
             placeholder="Last Name"
-            style="margin-bottom: 12px"
           />
           <input
             type="password"
             id="auth-password-register"
-            class="modal-input"
-            placeholder="Choose password (min 6 char)"
+            class="auth-input"
+            placeholder="Password (min 6 characters)"
             autocomplete="new-password"
           />
-          <p
-            id="auth-error-register"
-            style="
-              color: #ff5555;
-              font-size: 13px;
-              margin-top: 8px;
-              display: none;
-            "
-          ></p>
-          <div
-            style="
-              display: flex;
-              justify-content: space-between;
-              margin-top: 12px;
-            "
-          >
-            <button id="auth-back-to-email-2" class="btn-secondary small">
+          <input
+            type="password"
+            id="auth-confirm-password"
+            class="auth-input"
+            placeholder="Confirm password"
+          />
+          <p id="auth-error-register" class="auth-error hidden"></p>
+          <div class="auth-row">
+            <button
+              id="auth-back-to-email-2"
+              class="auth-btn auth-btn--secondary auth-btn--small"
+            >
               Back
             </button>
-            <button id="auth-register-btn" class="btn-primary">Register</button>
+            <button id="auth-register-btn" class="auth-btn auth-btn--primary">
+              Create Account
+            </button>
           </div>
         </div>
 
-        <!-- :::::::::::::::::::::::::: FORGOT PASSWORD :::::::::::::::::::::::::: -->
-        <div id="step-forgot" class="auth-step hidden">
-          <h3 style="color: var(--accent); margin-bottom: 20px">
-            Reset Password
-          </h3>
-          <p style="font-size: 13px; color: #888; margin-bottom: 16px">
+        <!-- فراموشی رمز -->
+        <div id="step-forgot" class="auth-step">
+          <h3 class="auth-reset-title">Reset Password</h3>
+          <p class="auth-reset-desc">
             Enter your email to receive a reset link.
           </p>
           <input
             type="email"
             id="forgot-email"
-            class="modal-input"
+            class="auth-input"
             placeholder="Your email"
           />
-          <p
-            id="forgot-message"
-            style="
-              color: #aaa;
-              font-size: 13px;
-              margin-top: 12px;
-              display: none;
-            "
-          ></p>
-          <div
-            style="
-              display: flex;
-              justify-content: space-between;
-              margin-top: 12px;
-            "
-          >
-            <button id="auth-back-to-login" class="btn-secondary small">
+          <p id="forgot-message" class="auth-forgot-message hidden"></p>
+          <div class="auth-row">
+            <button
+              id="auth-back-to-login"
+              class="auth-btn auth-btn--secondary auth-btn--small"
+            >
               Back
             </button>
-            <button id="auth-reset-btn" class="btn-primary">
+            <button id="auth-reset-btn" class="auth-btn auth-btn--primary">
               Send Reset Link
             </button>
           </div>
@@ -352,7 +307,7 @@
       </div>
     </div>
 
-    <!-- :::::::::::::::::::::::::: APP CONTAINER (HIDDEN UNTIL LOGGED IN) :::::::::::::::::::::::::: -->
+    <!-- :::::::::::::::::::::::::: APP CONTAINER :::::::::::::::::::::::::: -->
     <div id="app-container" class="app-hidden">
       <!-- :::::::::::::::::::::::::: MAIN CONTAINER :::::::::::::::::::::::::: -->
       <div class="premium-card">
@@ -575,133 +530,6 @@
           </div>
         </div>
       </sidebar-component>
-    </div>
-    <!-- =========================== AUTH OVERLAY =========================== -->
-    <div id="auth-overlay" class="modal auth-overlay">
-      <div class="modal-content auth-modal-content">
-        <!-- برندینگ (همیشه نمایان) -->
-        <div class="auth-header">
-          <img
-            src="assets/Zo.svg"
-            alt="Zorio Logo"
-            class="auth-logo"
-            onerror="this.style.display = 'none'"
-          />
-          <h1 class="auth-branding">Zorio</h1>
-          <p class="auth-subtitle">Image Converter</p>
-        </div>
-
-        <!-- مرحله ۱: ایمیل -->
-        <div id="step-1" class="auth-step active">
-          <input
-            type="email"
-            id="auth-email"
-            class="auth-input"
-            placeholder="Email address"
-            autocomplete="email"
-          />
-          <p id="auth-error-1" class="auth-error hidden"></p>
-          <button id="auth-continue-btn" class="auth-btn auth-btn--primary">
-            Continue
-          </button>
-        </div>
-
-        <!-- مرحله ۲: ورود -->
-        <div id="step-2-login" class="auth-step">
-          <p id="login-email-display" class="auth-email-display"></p>
-          <input
-            type="password"
-            id="auth-password-login"
-            class="auth-input"
-            placeholder="Password"
-            autocomplete="current-password"
-          />
-          <p id="auth-error-login" class="auth-error hidden"></p>
-          <div class="auth-row">
-            <button
-              id="auth-back-to-email"
-              class="auth-btn auth-btn--secondary auth-btn--small"
-            >
-              Back
-            </button>
-            <button id="auth-signin-btn" class="auth-btn auth-btn--primary">
-              Sign In
-            </button>
-          </div>
-          <p class="auth-link-row">
-            Forgot password?
-            <a href="#" id="forgot-link" class="auth-link">Reset</a>
-          </p>
-        </div>
-
-        <!-- مرحله ۲: ثبت‌نام -->
-        <div id="step-2-register" class="auth-step">
-          <p id="register-email-display" class="auth-email-display"></p>
-          <input
-            type="text"
-            id="auth-first-name"
-            class="auth-input"
-            placeholder="First Name"
-          />
-          <input
-            type="text"
-            id="auth-last-name"
-            class="auth-input"
-            placeholder="Last Name"
-          />
-          <input
-            type="password"
-            id="auth-password-register"
-            class="auth-input"
-            placeholder="Password (min 6 characters)"
-            autocomplete="new-password"
-          />
-          <input
-            type="password"
-            id="auth-confirm-password"
-            class="auth-input"
-            placeholder="Confirm password"
-          />
-          <p id="auth-error-register" class="auth-error hidden"></p>
-          <div class="auth-row">
-            <button
-              id="auth-back-to-email-2"
-              class="auth-btn auth-btn--secondary auth-btn--small"
-            >
-              Back
-            </button>
-            <button id="auth-register-btn" class="auth-btn auth-btn--primary">
-              Create Account
-            </button>
-          </div>
-        </div>
-
-        <!-- فراموشی رمز -->
-        <div id="step-forgot" class="auth-step">
-          <h3 class="auth-reset-title">Reset Password</h3>
-          <p class="auth-reset-desc">
-            Enter your email to receive a reset link.
-          </p>
-          <input
-            type="email"
-            id="forgot-email"
-            class="auth-input"
-            placeholder="Your email"
-          />
-          <p id="forgot-message" class="auth-forgot-message hidden"></p>
-          <div class="auth-row">
-            <button
-              id="auth-back-to-login"
-              class="auth-btn auth-btn--secondary auth-btn--small"
-            >
-              Back
-            </button>
-            <button id="auth-reset-btn" class="auth-btn auth-btn--primary">
-              Send Reset Link
-            </button>
-          </div>
-        </div>
-      </div>
     </div>
   </body>
 </html>
