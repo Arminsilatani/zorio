@@ -26,13 +26,13 @@ function hideGlobalLoader() {
 }
 
 function openModal(modal) {
+  modal.style.display = "flex";
   modal.classList.remove("hidden");
-  modal.classList.add("modal-open");
 }
 
 function closeModal(modal) {
+  modal.style.display = "none";
   modal.classList.add("hidden");
-  modal.classList.remove("modal-open");
 }
 
 function showStep(stepId) {
