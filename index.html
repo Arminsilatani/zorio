@@ -579,20 +579,20 @@
     <!-- =========================== AUTH OVERLAY =========================== -->
     <div id="auth-overlay" class="modal auth-overlay">
       <div class="modal-content auth-modal-content">
-        <!-- Branding (always visible) -->
+        <!-- برندینگ (همیشه نمایان) -->
         <div class="auth-header">
           <img
-            src="assets/MyApp.svg"
-            alt="Logo"
+            src="assets/Zo.svg"
+            alt="Zorio Logo"
             class="auth-logo"
             onerror="this.style.display = 'none'"
           />
-          <h1 class="auth-branding">My App Manage your links</h1>
-          <p class="auth-subtitle">sign in to manage your internal links</p>
+          <h1 class="auth-branding">Zorio</h1>
+          <p class="auth-subtitle">Image Converter</p>
         </div>
 
-        <!-- Step 1: Email -->
-        <div id="step-1" class="auth-step auth-step--active">
+        <!-- مرحله ۱: ایمیل -->
+        <div id="step-1" class="auth-step active">
           <input
             type="email"
             id="auth-email"
@@ -606,7 +606,7 @@
           </button>
         </div>
 
-        <!-- Step 2: Login -->
+        <!-- مرحله ۲: ورود -->
         <div id="step-2-login" class="auth-step">
           <p id="login-email-display" class="auth-email-display"></p>
           <input
@@ -634,14 +634,9 @@
           </p>
         </div>
 
-        <!-- Step 2: Register -->
+        <!-- مرحله ۲: ثبت‌نام -->
         <div id="step-2-register" class="auth-step">
-          <input
-            type="email"
-            id="register-email-display"
-            class="auth-input"
-            readonly
-          />
+          <p id="register-email-display" class="auth-email-display"></p>
           <input
             type="text"
             id="auth-first-name"
@@ -681,7 +676,7 @@
           </div>
         </div>
 
-        <!-- Forgot password -->
+        <!-- فراموشی رمز -->
         <div id="step-forgot" class="auth-step">
           <h3 class="auth-reset-title">Reset Password</h3>
           <p class="auth-reset-desc">

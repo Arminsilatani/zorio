@@ -43,18 +43,25 @@ function closeModal(modal) {
 function showStep(stepId) {
   document
     .querySelectorAll(".auth-step")
-    .forEach((s) => s.classList.remove("active"));
-  document.getElementById(stepId)?.classList.add("active");
+    .forEach((s) => s.classList.remove("auth-step--active"));
+  document.getElementById(stepId)?.classList.add("auth-step--active");
 }
-
 /* :::::::::::::::::::::::::: SIDEBAR COMPONENT :::::::::::::::::::::::::: */
 function getSidebarComponent() {
   if (!sidebarComponent) {
     sidebarComponent = document.querySelector("sidebar-component");
     if (sidebarComponent) {
-      sidebarComponent.addEventListener("login-request", () =>
-        openModal(authOverlay),
-      );
+      sidebarComponent.addEventListener("login-request", () => {
+        document.getElementById("auth-email").value = "";
+        document.getElementById("auth-password-login").value = "";
+        document.getElementById("auth-password-register").value = "";
+        document.getElementById("auth-confirm-password")?.value = "";
+        document
+          .querySelectorAll(".auth-error")
+          .forEach((el) => el.classList.add("hidden"));
+        showStep("step-1");
+        openModal(authOverlay);
+      });
       sidebarComponent.addEventListener("logout-request", () => logout());
       sidebarComponent.addEventListener("today-item-click", (e) => {
         console.log("[Zorio] today-item-click", e.detail);
@@ -208,20 +215,22 @@ async function restoreSession() {
     const {
       data: { session },
     } = await sb.auth.getSession();
+
     if (session?.user) {
       currentUser = session.user;
       currentProfile = await buildCurrentProfile(currentUser);
-      appContainer.classList.remove("app-hidden");
-      closeModal(authOverlay);
       syncSidebarComponent();
       if (!converterInitialized) {
         initConverter();
         converterInitialized = true;
       }
+      appContainer.classList.remove("app-hidden");
     } else {
-      appContainer.classList.add("app-hidden");
-      openModal(authOverlay);
-      showStep("step-1");
+      appContainer.classList.remove("app-hidden");
+      if (!converterInitialized) {
+        initConverter();
+        converterInitialized = true;
+      }
     }
   } catch (err) {
     console.error("Restore session error:", err);
