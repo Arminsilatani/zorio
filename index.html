@@ -576,5 +576,137 @@
         </div>
       </sidebar-component>
     </div>
+    <!-- =========================== AUTH OVERLAY =========================== -->
+    <div id="auth-overlay" class="modal auth-overlay">
+      <div class="modal-content auth-modal-content">
+        <!-- Branding (always visible) -->
+        <div class="auth-header">
+          <img
+            src="assets/MyApp.svg"
+            alt="Logo"
+            class="auth-logo"
+            onerror="this.style.display = 'none'"
+          />
+          <h1 class="auth-branding">My App Manage your links</h1>
+          <p class="auth-subtitle">sign in to manage your internal links</p>
+        </div>
+
+        <!-- Step 1: Email -->
+        <div id="step-1" class="auth-step auth-step--active">
+          <input
+            type="email"
+            id="auth-email"
+            class="auth-input"
+            placeholder="Email address"
+            autocomplete="email"
+          />
+          <p id="auth-error-1" class="auth-error hidden"></p>
+          <button id="auth-continue-btn" class="auth-btn auth-btn--primary">
+            Continue
+          </button>
+        </div>
+
+        <!-- Step 2: Login -->
+        <div id="step-2-login" class="auth-step">
+          <p id="login-email-display" class="auth-email-display"></p>
+          <input
+            type="password"
+            id="auth-password-login"
+            class="auth-input"
+            placeholder="Password"
+            autocomplete="current-password"
+          />
+          <p id="auth-error-login" class="auth-error hidden"></p>
+          <div class="auth-row">
+            <button
+              id="auth-back-to-email"
+              class="auth-btn auth-btn--secondary auth-btn--small"
+            >
+              Back
+            </button>
+            <button id="auth-signin-btn" class="auth-btn auth-btn--primary">
+              Sign In
+            </button>
+          </div>
+          <p class="auth-link-row">
+            Forgot password?
+            <a href="#" id="forgot-link" class="auth-link">Reset</a>
+          </p>
+        </div>
+
+        <!-- Step 2: Register -->
+        <div id="step-2-register" class="auth-step">
+          <input
+            type="email"
+            id="register-email-display"
+            class="auth-input"
+            readonly
+          />
+          <input
+            type="text"
+            id="auth-first-name"
+            class="auth-input"
+            placeholder="First Name"
+          />
+          <input
+            type="text"
+            id="auth-last-name"
+            class="auth-input"
+            placeholder="Last Name"
+          />
+          <input
+            type="password"
+            id="auth-password-register"
+            class="auth-input"
+            placeholder="Password (min 6 characters)"
+            autocomplete="new-password"
+          />
+          <input
+            type="password"
+            id="auth-confirm-password"
+            class="auth-input"
+            placeholder="Confirm password"
+          />
+          <p id="auth-error-register" class="auth-error hidden"></p>
+          <div class="auth-row">
+            <button
+              id="auth-back-to-email-2"
+              class="auth-btn auth-btn--secondary auth-btn--small"
+            >
+              Back
+            </button>
+            <button id="auth-register-btn" class="auth-btn auth-btn--primary">
+              Create Account
+            </button>
+          </div>
+        </div>
+
+        <!-- Forgot password -->
+        <div id="step-forgot" class="auth-step">
+          <h3 class="auth-reset-title">Reset Password</h3>
+          <p class="auth-reset-desc">
+            Enter your email to receive a reset link.
+          </p>
+          <input
+            type="email"
+            id="forgot-email"
+            class="auth-input"
+            placeholder="Your email"
+          />
+          <p id="forgot-message" class="auth-forgot-message hidden"></p>
+          <div class="auth-row">
+            <button
+              id="auth-back-to-login"
+              class="auth-btn auth-btn--secondary auth-btn--small"
+            >
+              Back
+            </button>
+            <button id="auth-reset-btn" class="auth-btn auth-btn--primary">
+              Send Reset Link
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
   </body>
 </html>

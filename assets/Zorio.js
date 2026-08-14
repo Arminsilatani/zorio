@@ -1,3 +1,8 @@
+/* ============================================================
+   Zorio Image Converter — Complete Single-File JavaScript
+   Auth + Sidebar + Notifications + Image Converter
+   ============================================================ */
+
 /* :::::::::::::::::::::::::: SUPABASE CONFIG :::::::::::::::::::::::::: */
 const SUPABASE_URL = "https://vzqicidepdmraygulrey.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_kqRWgOmLISOE2EuLL1s8fw_WN6FJRTI";
@@ -804,13 +809,13 @@ function initConverter() {
         const row = document.createElement("div");
         row.className = "result-item";
         row.innerHTML = `
-                    <img src="${outputURL}" alt="${name}" class="result-thumb">
-                    <div class="file-info">
-                        <span class="file-name">${name}</span>
-                        <span class="file-meta">${width}×${height} · ${(blob.size / 1024).toFixed(1)} KB</span>
-                    </div>
-                    <a href="${outputURL}" download="${name}" class="download-single-btn" title="Download">⬇</a>
-                `;
+          <img src="${outputURL}" alt="${name}" class="result-thumb">
+          <div class="file-info">
+            <span class="file-name">${name}</span>
+            <span class="file-meta">${width}×${height} · ${(blob.size / 1024).toFixed(1)} KB</span>
+          </div>
+          <a href="${outputURL}" download="${name}" class="download-single-btn" title="Download">⬇</a>
+        `;
         resultsListDiv.appendChild(row);
       } catch (err) {
         showError(`"${item.file.name}" failed: ${err.message}`);

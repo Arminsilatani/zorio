@@ -739,6 +739,220 @@ input[type="range"]::-moz-range-thumb {
   align-items: center;
 }
 
+/* =========================== AUTH OVERLAY STYLES =========================== */
+
+/* Only define these variables if not already in :root */
+:root {
+  --text: #f5f5f5;
+  --accent: #ff8fd1; /* fallback accent */
+  --border: rgba(255, 255, 255, 0.08);
+  --subtle: #b9b9d0;
+}
+
+/* Prevent body scroll when modal open */
+body.modal-open {
+  overflow: hidden;
+}
+
+/* The overlay container */
+.modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  z-index: 1000;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Glass panel */
+.modal-content,
+.auth-modal-content {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 32px 28px;
+  width: 90%;
+  max-width: 420px;
+  color: var(--text);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  max-height: 80vh;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--accent) transparent;
+  animation: modalIn 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+}
+
+/* Narrower for auth */
+.auth-overlay .modal-content {
+  max-width: 380px;
+}
+
+/* Custom scrollbar for WebKit */
+.modal-content::-webkit-scrollbar,
+.auth-modal-content::-webkit-scrollbar {
+  width: 6px;
+}
+.modal-content::-webkit-scrollbar-track,
+.auth-modal-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+.modal-content::-webkit-scrollbar-thumb,
+.auth-modal-content::-webkit-scrollbar-thumb {
+  background: var(--accent);
+  border-radius: 3px;
+}
+
+/* Entrance animation */
+@keyframes modalIn {
+  from {
+    opacity: 0;
+    transform: scale(0.92) translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* Auth header */
+.auth-header {
+  margin-bottom: 24px;
+  text-align: center;
+}
+.auth-logo {
+  display: block;
+  width: 56px;
+  height: auto;
+  margin: 0 auto 14px;
+}
+.auth-branding {
+  color: var(--text);
+  font-size: 1.6rem;
+  font-weight: 900;
+  margin: 0 0 6px;
+}
+.auth-subtitle {
+  color: var(--subtle);
+  font-size: 0.85rem;
+  margin: 0;
+}
+
+/* Inputs and buttons */
+.auth-input {
+  width: 100%;
+  margin-bottom: 12px;
+  padding: 11px 13px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.22);
+  color: var(--text);
+  font-size: 14px;
+}
+.auth-input:focus {
+  border-color: var(--accent);
+  background: rgba(255, 143, 209, 0.04);
+  outline: none;
+}
+.auth-input[readonly] {
+  cursor: default;
+}
+
+.auth-btn {
+  width: 100%;
+  padding: 10px 18px;
+  border: none;
+  border-radius: 8px;
+  font-weight: 400;
+  cursor: pointer;
+  transition:
+    filter 0.2s,
+    transform 0.1s;
+}
+.auth-btn--primary {
+  background: var(--accent);
+  color: #1b1017;
+}
+.auth-btn--secondary {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text);
+}
+.auth-btn--small {
+  width: auto;
+  padding: 8px 14px;
+  font-size: 0.85rem;
+}
+.auth-row {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 12px;
+  gap: 10px;
+}
+
+/* Messages and links */
+.auth-error {
+  color: #ff5555;
+  font-size: 0.8rem;
+  margin: 8px 0 12px;
+}
+.auth-link-row {
+  margin-top: 14px;
+  font-size: 0.85rem;
+  color: #888;
+}
+.auth-link {
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 500;
+}
+.auth-link:hover {
+  text-decoration: underline;
+}
+.auth-reset-title {
+  color: var(--accent);
+  margin-bottom: 16px;
+  font-size: 1.2rem;
+}
+.auth-reset-desc {
+  font-size: 0.85rem;
+  color: #888;
+  margin: 0 0 16px;
+}
+.auth-forgot-message {
+  font-size: 0.8rem;
+  margin: 10px 0;
+}
+
+/* Steps */
+.auth-step {
+  display: none;
+  text-align: left;
+}
+.auth-step--active {
+  display: block;
+}
+
+/* Email display read‑only field */
+.auth-email-display {
+  font-size: 0.85rem;
+  color: #888;
+  margin: 0 0 16px;
+  word-break: break-all;
+}
+
+/* Utility */
+.hidden {
+  display: none !important;
+}
+.app-hidden {
+  display: none !important;
+}
+
 /* :::::::::::::::::::::::::: SPINNER REMOVAL :::::::::::::::::::::::::: */
 
 input[type="number"]::-webkit-inner-spin-button,
